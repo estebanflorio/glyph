@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+  const res    = await fetch('/api/firebase-config');
+  const config = await res.json();
+  const auth   = getAuth(initializeApp(config));
+
+  onAuthStateChanged(auth, user => {
+    if (!user) window.location.href = '/login';
+  });
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLYPH — Designer Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --surface: #111113;
+    --surface2: #18181c;
+    --surface3: #222228;
+    --border: #2a2a32;
+    --accent: #c8f135;
+    --accent2: #7c6af7;
+    --text: #e8e8ec;
+    --text2: #8888a0;
+    --text3: #444458;
+    --danger: #ff4757;
+    --success: #2ed573;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,11,0.9);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .tagline {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+  }
+
+  .nav-tab {
+    padding: 8px 18px;
+    border-radius: 7px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .nav-tab:hover { color: var(--text); background: var(--surface2); }
+  .nav-tab.active { background: var(--accent); color: #0a0a0b; font-weight: 500; }
+  .nav-tab .tab-icon { font-size: 14px; }
+
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px;
+  }
+
+  .tool-panel { display: none; animation: fadeIn 0.3s ease; }
+  .tool-panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-header { margin-bottom: 32px; }
+
+  .panel-title {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .panel-title span { color: var(--accent); }
+
+  .panel-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+  }
+
+  /* API KEY */
+  .api-key-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .api-key-section .api-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text3);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .api-key-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .api-key-input:focus { border-color: var(--accent2); }
+  .api-key-input::placeholder { color: var(--text3); }
+
+  .api-key-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .api-key-status.ok { background: rgba(46,213,115,0.12); color: var(--success); border: 1px solid rgba(46,213,115,0.25); }
+  .api-key-status.empty { background: rgba(255,71,87,0.1); color: var(--danger); border: 1px solid rgba(255,71,87,0.2); }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 48px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(200,241,53,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .upload-zone:hover { border-color: var(--accent); background: var(--surface2); }
+  .upload-zone.drag-over { border-color: var(--accent); background: rgba(200,241,53,0.05); }
+
+  .upload-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.6; }
+  .upload-text { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .upload-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 1px; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .btn-primary { background: var(--accent); color: #0a0a0b; }
+  .btn-primary:hover { background: #d4f545; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(200,241,53,0.3); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+  .btn-accent2 { background: var(--accent2); color: white; }
+  .btn-accent2:hover { background: #8f7ef8; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,106,247,0.3); }
+  .btn-sm { padding: 8px 14px; font-size: 11px; }
+
+  /* LAYOUT */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* PREVIEW */
+  .preview-wrap {
+    background: var(--surface2);
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .preview-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+  .preview-placeholder { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 1px; }
+
+  .checker-bg {
+    background-image:
+      linear-gradient(45deg, #1a1a20 25%, transparent 25%),
+      linear-gradient(-45deg, #1a1a20 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #1a1a20 75%),
+      linear-gradient(-45deg, transparent 75%, #1a1a20 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    background-color: #111113;
+  }
+
+  .actions-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+  /* STATUS */
+  .status-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-top: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .status-bar.visible { display: flex; }
+
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .status-dot.loading { background: var(--accent2); animation: blink 0.8s infinite; }
+  .status-dot.error { background: var(--danger); }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  /* SCALE OPTIONS */
+  .scale-options { display: flex; gap: 8px; margin: 16px 0; }
+
+  .scale-btn {
+    flex: 1;
+    padding: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .scale-btn:hover { border-color: var(--text2); color: var(--text); }
+  .scale-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(200,241,53,0.05); }
+
+  /* COMPARISON SLIDER */
+  .comparison-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    cursor: ew-resize;
+    user-select: none;
+    aspect-ratio: 4/3;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .comparison-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+  .comparison-after { clip-path: inset(0 0 0 50%); transition: none; }
+
+  .comparison-line {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: var(--accent);
+    left: 50%;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .comparison-handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 50%;
+    z-index: 11;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0a0a0b;
+    font-size: 12px;
+    pointer-events: none;
+  }
+
+  /* MOCKUP */
+  .mockup-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+
+  .mockup-item {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mockup-item:hover { border-color: var(--text2); background: var(--surface3); }
+  .mockup-item.selected { border-color: var(--accent); background: rgba(200,241,53,0.05); }
+  .mockup-icon { font-size: 26px; margin-bottom: 6px; }
+  .mockup-name { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text2); letter-spacing: 0.5px; }
+
+  .mockup-canvas-wrap {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  #mockupCanvas { max-width: 100%; max-height: 100%; display: none; }
+
+  .mockup-placeholder { text-align: center; color: var(--text3); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; }
+  .mockup-placeholder .big-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+
+  /* CONTROLS */
+  .control-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .control-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2); letter-spacing: 1px; }
+
+  input[type="range"] { -webkit-appearance: none; width: 140px; height: 3px; background: var(--border); border-radius: 2px; outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+  input[type="color"] { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 6px; background: none; cursor: pointer; padding: 2px; }
+
+  /* CONVERTER */
+  .format-grid { display: flex; gap: 8px; margin: 16px 0; }
+
+  .format-btn {
+    flex: 1;
+    padding: 10px 6px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .format-btn:hover { border-color: var(--text2); color: var(--text); }
+  .format-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(200,241,53,0.05); }
+
+  .file-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    gap: 8px;
+  }
+
+  .file-list-item .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .file-list-item .file-size { color: var(--text3); font-size: 10px; }
+  .file-list-item .file-status { font-size: 14px; min-width: 20px; text-align: center; }
+
+  /* MISC */
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+  .info-box {
+    background: rgba(124,106,247,0.08);
+    border: 1px solid rgba(124,106,247,0.25);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-top: 16px;
+  }
+
+  .info-box strong { color: var(--accent2); font-weight: 500; }
+  .info-box a { color: var(--accent); text-decoration: none; }
+  .info-box a:hover { text-decoration: underline; }
+
+  .hidden { display: none !important; }
+  input[type="file"] { display: none; }
+
+  .progress-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; display: none; }
+  .progress-bar-wrap.visible { display: block; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.4s; }
+
+  .quality-row { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+  .quality-val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent); min-width: 40px; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    header { padding: 16px 20px; flex-wrap: wrap; gap: 12px; }
+    main { padding: 20px; }
+    .two-col { grid-template-columns: 1fr; }
+    .mockup-grid { grid-template-columns: repeat(3, 1fr); }
+    .format-grid { flex-wrap: wrap; }
+    .api-key-section { flex-wrap: wrap; }
+  }
+
+  /* ─── AUTH OVERLAY ─────────────────────────────── */
+  .auth-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(10,10,11,0.97);
+    backdrop-filter: blur(20px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .auth-overlay.hidden { display: none; }
+
+  .auth-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%; max-width: 400px;
+    position: relative;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  }
+
+  .auth-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 20px; font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .auth-subtitle {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--text3); letter-spacing: 1px;
+    margin-bottom: 32px;
+  }
+
+  .auth-tabs {
+    display: flex; gap: 4px;
+    background: var(--surface2);
+    border-radius: 8px; padding: 4px;
+    margin-bottom: 24px;
+  }
+
+  .auth-tab {
+    flex: 1; padding: 8px;
+    border: none; border-radius: 6px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    cursor: pointer; background: transparent;
+    color: var(--text2); transition: all 0.2s;
+  }
+  .auth-tab.active { background: var(--accent); color: #0a0a0b; font-weight: 600; }
+
+  .auth-field { margin-bottom: 14px; }
+
+  .auth-field label {
+    display: block; font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--text3); letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+
+  .auth-field input {
+    display: block; width: 100%;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 11px 14px;
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--text); outline: none;
+    transition: border-color 0.2s;
+  }
+  .auth-field input:focus { border-color: var(--accent2); }
+
+  .auth-error {
+    background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3);
+    border-radius: 8px; padding: 10px 14px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--danger); margin-bottom: 14px; display: none;
+  }
+  .auth-error.visible { display: block; }
+
+  .auth-btn {
+    width: 100%; padding: 13px;
+    background: var(--accent); color: #0a0a0b;
+    border: none; border-radius: 8px;
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    font-weight: 600; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .auth-btn:hover { background: #d4f545; }
+  .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ─── HEADER AUTH WIDGET ─────────────────────────── */
+  .header-auth {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .credits-badge {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 14px;
+    background: rgba(200,241,53,0.08);
+    border: 1px solid rgba(200,241,53,0.2);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--accent); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .credits-badge:hover { background: rgba(200,241,53,0.14); }
+  .credits-badge .credit-icon { font-size: 14px; }
+  .credits-badge .credit-num { font-weight: 600; }
+  .credits-badge .credit-label { color: var(--text3); font-size: 10px; letter-spacing: 1px; }
+
+  .user-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--text2); transition: all 0.2s;
+  }
+  .user-btn:hover { border-color: var(--text2); color: var(--text); }
+
+  .login-btn {
+    padding: 8px 18px;
+    background: transparent; border: 1px solid var(--accent);
+    border-radius: 8px; color: var(--accent);
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+  }
+  .login-btn:hover { background: rgba(200,241,53,0.08); }
+
+  /* ─── PLANES MODAL ───────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(10,10,11,0.9);
+    backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.hidden { display: none; }
+
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 36px;
+    width: 100%; max-width: 560px;
+    position: relative;
+  }
+
+  .modal-title {
+    font-size: 24px; font-weight: 800;
+    margin-bottom: 6px; letter-spacing: -0.5px;
+  }
+  .modal-title span { color: var(--accent); }
+
+  .modal-sub {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--text3); margin-bottom: 28px; letter-spacing: 0.5px;
+  }
+
+  .planes-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+
+  .plan-card {
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 20px 16px; text-align: center;
+    cursor: pointer; transition: all 0.2s; position: relative;
+  }
+  .plan-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .plan-card.popular { border-color: var(--accent2); }
+  .plan-card.popular::before {
+    content: 'POPULAR'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--accent2); color: white;
+    font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px;
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  .plan-name {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--text3); letter-spacing: 2px; margin-bottom: 10px;
+  }
+  .plan-credits {
+    font-size: 28px; font-weight: 800; color: var(--accent);
+    line-height: 1; margin-bottom: 4px;
+  }
+  .plan-credits-label {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--text3); margin-bottom: 16px;
+  }
+  .plan-price {
+    font-size: 18px; font-weight: 700; margin-bottom: 4px;
+  }
+  .plan-usd {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--text3); margin-bottom: 16px;
+  }
+  .plan-btn {
+    width: 100%; padding: 10px;
+    background: var(--accent2); color: white;
+    border: none; border-radius: 8px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+  }
+  .plan-btn:hover { background: #8f7ef8; }
+  .plan-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .modal-ops {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 12px;
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3);
+  }
+  .modal-ops span { color: var(--text2); }
+
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; width: 32px; height: 32px;
+    cursor: pointer; color: var(--text2); font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { border-color: var(--text); color: var(--text); }
+
+  /* ─── TOAST ──────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 2000;
+    padding: 14px 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; font-family: 'DM Mono', monospace;
+    font-size: 12px; color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(46,213,115,0.4); }
+  .toast.error   { border-color: rgba(255,71,87,0.4); }
+  .toast.info    { border-color: rgba(124,106,247,0.4); }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    GLYPH
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('bg', this)">
+      <span class="tab-icon">✂️</span> Fondo
+    </button>
+    <button class="nav-tab" onclick="switchTab('upscale', this)">
+      <span class="tab-icon">🔬</span> Upscaler
+    </button>
+    <button class="nav-tab" onclick="switchTab('convert', this)">
+      <span class="tab-icon">🔄</span> Conversor
+    </button>
+    <button class="nav-tab" onclick="switchTab('mockup', this)">
+      <span class="tab-icon">👕</span> Mockups
+    </button>
+  </nav>
+  <div class="header-auth" id="headerAuth">
+    <button class="login-btn" onclick="openAuth()">Iniciar sesión</button>
+  </div>
+</header>
+
+<!-- PLANES MODAL -->
+<div class="modal-overlay hidden" id="planesModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closePlanesModal()">✕</button>
+    <div class="modal-title">Cargar <span>créditos</span></div>
+    <div class="modal-sub">// CADA OPERACIÓN CONSUME 2 CRÉDITOS · CONVERSIÓN GRATIS · MOCKUPS 1 CRÉDITO</div>
+
+    <div class="planes-grid">
+      <div class="plan-card" onclick="comprarPlan('starter')">
+        <div class="plan-name">STARTER</div>
+        <div class="plan-credits">50</div>
+        <div class="plan-credits-label">créditos</div>
+        <div class="plan-price">$2.000</div>
+        <div class="plan-usd">ARS · ~25 operaciones</div>
+        <button class="plan-btn" id="btn-starter">Comprar</button>
+      </div>
+      <div class="plan-card popular" onclick="comprarPlan('pro')">
+        <div class="plan-name">PRO</div>
+        <div class="plan-credits">200</div>
+        <div class="plan-credits-label">créditos</div>
+        <div class="plan-price">$6.000</div>
+        <div class="plan-usd">ARS · ~100 operaciones</div>
+        <button class="plan-btn" id="btn-pro">Comprar</button>
+      </div>
+      <div class="plan-card" onclick="comprarPlan('studio')">
+        <div class="plan-name">STUDIO</div>
+        <div class="plan-credits">500</div>
+        <div class="plan-credits-label">créditos</div>
+        <div class="plan-price">$12.000</div>
+        <div class="plan-usd">ARS · ~250 operaciones</div>
+        <button class="plan-btn" id="btn-studio">Comprar</button>
+      </div>
+    </div>
+
+    <div class="modal-ops">
+      ✂️ Remove BG <span>2 créditos</span> &nbsp;·&nbsp;
+      🔬 Upscaler <span>2 créditos</span> &nbsp;·&nbsp;
+      🔄 Conversor <span>gratis</span> &nbsp;·&nbsp;
+      👕 Mockups <span>1 crédito</span>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<main>
+
+<!-- ===== TAB 1: REMOVE BG ===== -->
+<div class="tool-panel active" id="panel-bg">
+  <div class="panel-header">
+    <div class="panel-title">Remover <span>fondo</span></div>
+    <div class="panel-desc">// POWERED BY REPLICATE · MODELO LUCATACO/REMOVE-BG · RESULTADO PROFESIONAL CON CANAL ALFA</div>
+  </div>
+
+  <input type="file" id="bgFileInput" accept="image/jpeg,image/png,image/webp">
+  <div class="upload-zone" id="bgUploadZone" onclick="document.getElementById('bgFileInput').click()">
+    <div class="upload-icon">🖼️</div>
+    <div class="upload-text">Arrastrá tu imagen aquí</div>
+    <div class="upload-sub">JPG · PNG · WEBP · MÁXIMO 10MB</div>
+  </div>
+
+  <div class="status-bar" id="bgStatus">
+    <div class="status-dot loading" id="bgStatusDot"></div>
+    <span id="bgStatusText">Enviando a Replicate...</span>
+  </div>
+
+  <div class="progress-bar-wrap" id="bgProgress">
+    <div class="progress-bar-fill" id="bgProgressFill"></div>
+  </div>
+
+  <div class="two-col" id="bgResults" style="display:none">
+    <div class="card">
+      <div class="card-label">Original</div>
+      <div class="preview-wrap">
+        <img id="bgOrigImg" src="" alt="Original">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Sin fondo — Replicate IA</div>
+      <div class="preview-wrap checker-bg">
+        <img id="bgResultImg" src="" alt="Resultado">
+      </div>
+      <div class="actions-row">
+        <button class="btn btn-primary" onclick="downloadBgResult()">⬇ Descargar PNG</button>
+        <button class="btn btn-ghost" onclick="resetTool('bg')">↺ Nueva imagen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>ℹ️ Cómo funciona:</strong> La imagen se envía al modelo
+    <strong>lucataco/remove-bg</strong> en Replicate, que usa redes neuronales entrenadas
+    para segmentación semántica precisa. El resultado es un <strong>PNG con transparencia perfecta</strong>,
+    ideal para cualquier fondo. La API key se configura en el archivo <strong>.env</strong> del servidor.
+  </div>
+</div>
+
+<!-- ===== TAB 2: UPSCALER ===== -->
+<div class="tool-panel" id="panel-upscale">
+  <div class="panel-header">
+    <div class="panel-title">Upscaler <span>IA</span></div>
+    <div class="panel-desc">// POWERED BY REPLICATE · prunaai/p-image-upscale · ~1 SEGUNDO · HASTA 8MP</div>
+  </div>
+
+  <div class="scale-options">
+    <div class="scale-btn selected" data-scale="2" onclick="selectScale(this, 2)">2×</div>
+    <div class="scale-btn" data-scale="4" onclick="selectScale(this, 4)">4×</div>
+  </div>
+
+  <input type="file" id="upscaleFileInput" accept="image/jpeg,image/png,image/webp">
+  <div class="upload-zone" id="upscaleUploadZone" onclick="document.getElementById('upscaleFileInput').click()">
+    <div class="upload-icon">🔬</div>
+    <div class="upload-text">Arrastrá tu imagen aquí</div>
+    <div class="upload-sub">JPG · PNG · WEBP · MÁXIMO 10MB</div>
+  </div>
+
+  <div class="status-bar" id="upscaleStatus">
+    <div class="status-dot loading" id="upscaleStatusDot"></div>
+    <span id="upscaleStatusText">Enviando a Replicate...</span>
+  </div>
+
+  <div class="progress-bar-wrap" id="upscaleProgress">
+    <div class="progress-bar-fill" id="upscaleProgressFill"></div>
+  </div>
+
+  <div class="two-col" id="upscaleResults" style="display:none">
+    <div class="card">
+      <div class="card-label">Comparación — arrastrá para comparar</div>
+      <div class="comparison-wrap" id="compWrap">
+        <img id="upscaleOrigImg" src="" alt="Original">
+        <img id="upscaleResultImg" src="" alt="Upscaled" class="comparison-after">
+        <div class="comparison-line" id="compLine"></div>
+        <div class="comparison-handle" id="compHandle">⇔</div>
+      </div>
+      <div style="margin-top:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);text-align:center;letter-spacing:1px;">← ORIGINAL · UPSCALED →</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Información</div>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);line-height:2.2;margin-top:4px;">
+        <div>Tamaño original: <span id="origSize" style="color:var(--text)">—</span></div>
+        <div>Tamaño nuevo: <span id="newSize" style="color:var(--accent)">—</span></div>
+        <div>Factor: <span id="scaleInfo" style="color:var(--accent)">—</span></div>
+        <div>Modelo: <span style="color:var(--accent2)">prunaai/p-image-upscale</span></div>
+        <div>Procesado en: <span id="upscaleTime" style="color:var(--text)">—</span></div>
+      </div>
+      <div class="actions-row" style="margin-top:24px;">
+        <button class="btn btn-primary" onclick="downloadUpscaled()">⬇ Descargar</button>
+        <button class="btn btn-ghost" onclick="resetTool('upscale')">↺ Nueva imagen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>ℹ️ prunaai/p-image-upscale:</strong> El upscaler más rápido de Replicate (~1 segundo).
+    Soporta salida hasta <strong>8MP</strong>. Si tu imagen es muy grande, el navegador la optimiza
+    automáticamente antes de enviarla — sin instalar nada extra.
+    <strong>2×</strong> ideal para la mayoría de casos. <strong>4×</strong> para fotos pequeñas o íconos.
+  </div>
+</div>
+
+<!-- ===== TAB 3: CONVERSOR ===== -->
+<div class="tool-panel" id="panel-convert">
+  <div class="panel-header">
+    <div class="panel-title">Conversor de <span>formatos</span></div>
+    <div class="panel-desc">// LOCAL · SIN SERVIDOR · TUS ARCHIVOS NO SALEN DEL NAVEGADOR · MÚLTIPLES ARCHIVOS A LA VEZ</div>
+  </div>
+
+  <input type="file" id="convertFileInput" accept="image/*" multiple>
+  <div class="upload-zone" id="convertUploadZone" onclick="document.getElementById('convertFileInput').click()">
+    <div class="upload-icon">🔄</div>
+    <div class="upload-text">Arrastrá imágenes aquí (se aceptan múltiples)</div>
+    <div class="upload-sub">JPG · PNG · WEBP · BMP · GIF · TIFF · SVG</div>
+  </div>
+
+  <div id="convertOptions" style="display:none; margin-top: 24px;">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-label">Formato de salida</div>
+        <div class="format-grid" style="margin-top:12px;">
+          <div class="format-btn selected" onclick="selectFormat(this,'image/jpeg','jpg')">JPG</div>
+          <div class="format-btn" onclick="selectFormat(this,'image/png','png')">PNG</div>
+          <div class="format-btn" onclick="selectFormat(this,'image/webp','webp')">WEBP</div>
+          <div class="format-btn" onclick="selectFormat(this,'image/avif','avif')">AVIF</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div id="qualitySection">
+          <div class="card-label">Calidad de compresión</div>
+          <div class="quality-row" style="margin-top:12px;">
+            <span class="control-label">Calidad</span>
+            <input type="range" id="convertQuality" min="10" max="100" value="90"
+              oninput="document.getElementById('convertQualVal').textContent = this.value + '%'">
+            <span class="quality-val" id="convertQualVal">90%</span>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);">PNG ignora la calidad (siempre lossless)</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-label">Redimensionar (opcional)</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);">
+            <input type="checkbox" id="doResize" style="display:inline;width:14px;height:14px;accent-color:var(--accent);">
+            Ancho máximo
+          </label>
+          <input type="number" id="resizeWidth" value="1920" min="100" max="8000"
+            style="width:76px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;">
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);">px</span>
+        </div>
+
+        <div style="margin-top:20px;">
+          <button class="btn btn-primary" onclick="convertAll()" style="width:100%;">⚡ Convertir y descargar todo</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Archivos — <span id="convertCount" style="color:var(--accent)">0</span> seleccionados</div>
+        <div id="convertFileList" style="margin-top:10px;max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+        <div class="actions-row" style="margin-top:16px;">
+          <button class="btn btn-ghost" onclick="resetTool('convert')">↺ Limpiar todo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-bar" id="convertStatus">
+      <div class="status-dot loading" id="convertStatusDot"></div>
+      <span id="convertStatusText">Convirtiendo...</span>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>ℹ️ 100% local:</strong> Todas las conversiones ocurren en tu navegador usando Canvas API.
+    Ningún archivo se sube a ningún servidor. <strong>WEBP y AVIF</strong> ofrecen la mejor compresión para web.
+    <strong>PNG</strong> preserva transparencia. Al convertir múltiples archivos se descargan de a uno.
+  </div>
+</div>
+
+<!-- ===== TAB 4: MOCKUPS ===== -->
+<div class="tool-panel" id="panel-mockup">
+  <div class="panel-header">
+    <div class="panel-title">Generador de <span>mockups</span></div>
+    <div class="panel-desc">// ELEGÍ UN TIPO, SUBÍ TU DISEÑO Y DESCARGÁ EL MOCKUP LISTO</div>
+  </div>
+
+  <div class="mockup-grid">
+    <div class="mockup-item selected" onclick="selectMockup(this,'tshirt')"><div class="mockup-icon">👕</div><div class="mockup-name">Remera</div></div>
+    <div class="mockup-item" onclick="selectMockup(this,'hoodie')"><div class="mockup-icon">🧥</div><div class="mockup-name">Hoodie</div></div>
+    <div class="mockup-item" onclick="selectMockup(this,'mug')"><div class="mockup-icon">☕</div><div class="mockup-name">Taza</div></div>
+    <div class="mockup-item" onclick="selectMockup(this,'poster')"><div class="mockup-icon">🖼️</div><div class="mockup-name">Póster</div></div>
+    <div class="mockup-item" onclick="selectMockup(this,'tote')"><div class="mockup-icon">🛍️</div><div class="mockup-name">Tote bag</div></div>
+    <div class="mockup-item" onclick="selectMockup(this,'phone')"><div class="mockup-icon">📱</div><div class="mockup-name">Celular</div></div>
+    <div class="mockup-item" onclick="selectMockup(this,'notebook')"><div class="mockup-icon">📓</div><div class="mockup-name">Notebook</div></div>
+    <div class="mockup-item" onclick="selectMockup(this,'sticker')"><div class="mockup-icon">🏷️</div><div class="mockup-name">Sticker</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <input type="file" id="mockupFileInput" accept="image/jpeg,image/png">
+      <div class="upload-zone" id="mockupUploadZone" onclick="document.getElementById('mockupFileInput').click()">
+        <div class="upload-icon">🎨</div>
+        <div class="upload-text">Subí tu diseño</div>
+        <div class="upload-sub">PNG RECOMENDADO · FONDO TRANSPARENTE</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card">
+        <div class="card-label">Ajustes</div>
+        <div class="control-row" style="margin-top:12px;">
+          <span class="control-label">Color de prenda</span>
+          <input type="color" id="garmentColor" value="#ffffff" onchange="updateMockup()">
+        </div>
+        <div class="control-row">
+          <span class="control-label">Tamaño diseño</span>
+          <input type="range" id="designSize" min="20" max="80" value="45" oninput="updateMockup()">
+        </div>
+        <div class="control-row">
+          <span class="control-label">Posición vertical</span>
+          <input type="range" id="designY" min="20" max="70" value="40" oninput="updateMockup()">
+        </div>
+        <div class="control-row">
+          <span class="control-label">Opacidad diseño</span>
+          <input type="range" id="designOpacity" min="20" max="100" value="95" oninput="updateMockup()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Preview — <span id="currentMockupLabel" style="color:var(--accent)">REMERA</span></div>
+      <div class="mockup-canvas-wrap">
+        <canvas id="mockupCanvas"></canvas>
+        <div class="mockup-placeholder" id="mockupPlaceholder">
+          <div class="big-icon">👕</div>
+          <div>Subí tu diseño para<br>generar el mockup</div>
+        </div>
+      </div>
+      <div class="actions-row" style="margin-top:16px;">
+        <button class="btn btn-primary" id="mockupDownloadBtn" onclick="downloadMockup()" disabled>⬇ Descargar mockup</button>
+        <button class="btn btn-ghost" onclick="resetTool('mockup')">↺ Limpiar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<canvas id="tempCanvas" style="display:none"></canvas>
+
+<script>
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+let state = {
+  bg:      { file: null, resultUrl: null },
+  upscale: { file: null, scale: 2, resultUrl: null, startTime: null },
+  convert: { files: [], format: 'image/jpeg', ext: 'jpg', quality: 90 },
+  mockup:  { type: 'tshirt', designImg: null }
+};
+
+// Server URL — el HTML se sirve desde el mismo servidor Node
+const SERVER = window.location.origin.startsWith('file') ? 'http://localhost:3000' : window.location.origin;
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  btn.classList.add('active');
+  syncKeyDisplays();
+  updateApiStatus();
+}
+
+// ============================================================
+// DRAG & DROP
+// ============================================================
+function setupDrop(zoneId, handler) {
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    handler(e.dataTransfer.files);
+  });
+}
+
+setupDrop('bgUploadZone', files => { if (files[0]) handleBGFile(files[0]); });
+setupDrop('upscaleUploadZone', files => { if (files[0]) handleUpscaleFile(files[0]); });
+setupDrop('convertUploadZone', files => handleConvertFiles(files));
+setupDrop('mockupUploadZone', files => { if (files[0]) handleMockupFile(files[0]); });
+
+document.getElementById('bgFileInput').addEventListener('change', e => { if (e.target.files[0]) handleBGFile(e.target.files[0]); });
+document.getElementById('upscaleFileInput').addEventListener('change', e => { if (e.target.files[0]) handleUpscaleFile(e.target.files[0]); });
+document.getElementById('convertFileInput').addEventListener('change', e => handleConvertFiles(e.target.files));
+document.getElementById('mockupFileInput').addEventListener('change', e => { if (e.target.files[0]) handleMockupFile(e.target.files[0]); });
+
+// ============================================================
+// SERVER HELPER — todas las llamadas van al servidor local
+// ============================================================
+async function callServer(endpoint, file, extraFields = {}) {
+  if (!currentUser) {
+    openAuth();
+    throw new Error('Iniciá sesión para usar esta función.');
+  }
+  const token = await getAuthToken();
+  const form  = new FormData();
+  form.append('image', file);
+  for (const [k, v] of Object.entries(extraFields)) form.append(k, String(v));
+  const res = await fetch(SERVER + endpoint, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  });
+  const data = await res.json().catch(() => ({ success: false, error: `Error ${res.status}` }));
+  if (!data.success) throw new Error(data.error || 'Error en el servidor');
+  // Actualizar créditos en el badge si vienen en la respuesta
+  if (typeof data.credits === 'number') updateCreditsDisplay(data.credits);
+  return data.url;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ============================================================
+// ANIMATE PROGRESS (fake indeterminate)
+// ============================================================
+function startProgress(fillId) {
+  const fill = document.getElementById(fillId);
+  const wrap = fill.parentElement;
+  wrap.classList.add('visible');
+  fill.style.width = '0%';
+  let p = 0;
+  const interval = setInterval(() => {
+    p = p < 85 ? p + (Math.random() * 4) : p + 0.1;
+    fill.style.width = Math.min(p, 92) + '%';
+  }, 600);
+  return { interval, fill, wrap };
+}
+
+function finishProgress(prog) {
+  clearInterval(prog.interval);
+  prog.fill.style.width = '100%';
+  setTimeout(() => prog.wrap.classList.remove('visible'), 800);
+}
+
+// ============================================================
+// STATUS HELPERS
+// ============================================================
+function showStatus(tool, type, msg) {
+  const bar = document.getElementById(tool + 'Status');
+  const dot = document.getElementById(tool + 'StatusDot');
+  const txt = document.getElementById(tool + 'StatusText');
+  bar.classList.add('visible');
+  dot.className = 'status-dot' + (type === 'loading' ? ' loading' : type === 'error' ? ' error' : '');
+  txt.textContent = msg;
+}
+
+function hideStatus(tool, delay = 3000) {
+  setTimeout(() => document.getElementById(tool + 'Status').classList.remove('visible'), delay);
+}
+
+// ============================================================
+// BG REMOVER — REPLICATE
+// ============================================================
+async function handleBGFile(file) {
+  if (!file.type.match(/image\/(jpeg|png|webp)/)) return alert('Solo JPG, PNG o WEBP.');
+  if (file.size > 10 * 1024 * 1024) return alert('La imagen supera los 10MB.');
+
+  state.bg.file = file;
+
+  const base64 = await fileToBase64(file);
+  document.getElementById('bgOrigImg').src = base64;
+  document.getElementById('bgUploadZone').style.display = 'none';
+  document.getElementById('bgResults').style.display = 'none';
+
+  showStatus('bg', 'loading', 'Procesando con Replicate — lucataco/remove-bg...');
+  const prog = startProgress('bgProgressFill');
+
+  try {
+    const resultUrl = await callServer('/api/remove-bg', file);
+
+    finishProgress(prog);
+    state.bg.resultUrl = resultUrl;
+
+    document.getElementById('bgResultImg').src = resultUrl;
+    document.getElementById('bgResults').style.display = 'grid';
+    showStatus('bg', 'success', '✓ Fondo eliminado correctamente');
+    hideStatus('bg');
+
+  } catch (err) {
+    finishProgress(prog);
+    showStatus('bg', 'error', '✗ Error: ' + err.message);
+    document.getElementById('bgUploadZone').style.display = '';
+  }
+}
+
+async function downloadBgResult() {
+  if (!state.bg.resultUrl) return;
+  // Fetch and download (handles CORS for replicate URLs)
+  try {
+    const res = await fetch(state.bg.resultUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sin-fondo.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    // Fallback: open in new tab
+    window.open(state.bg.resultUrl, '_blank');
+  }
+}
+
+// ============================================================
+// UPSCALER — REPLICATE (Real-ESRGAN)
+// ============================================================
+let selectedScale = 2;
+
+function selectScale(el, scale) {
+  document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedScale = scale;
+  state.upscale.scale = scale;
+}
+
+// Redimensiona con Canvas si supera maxPixels (sin dependencias externas)
+async function resizeImageIfNeeded(file, maxPixels = 4_000_000) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const pixels = img.width * img.height;
+      if (pixels <= maxPixels) { resolve(file); return; }
+
+      const ratio  = Math.sqrt(maxPixels / pixels);
+      const w      = Math.floor(img.width  * ratio);
+      const h      = Math.floor(img.height * ratio);
+      console.log(`Resize: ${img.width}×${img.height} → ${w}×${h}`);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', 0.92);
+    };
+    img.src = url;
+  });
+}
+
+async function handleUpscaleFile(file) {
+  if (!file.type.match(/image\/(jpeg|png|webp)/)) return alert('Solo JPG, PNG o WEBP.');
+  if (file.size > 20 * 1024 * 1024) return alert('La imagen supera los 20MB.');
+
+  state.upscale.file = file;
+  state.upscale.startTime = Date.now();
+
+  const base64   = await fileToBase64(file);
+  const origDims = await getImageDimensions(base64);
+
+  document.getElementById('upscaleUploadZone').style.display = 'none';
+  document.getElementById('upscaleResults').style.display = 'none';
+  document.getElementById('origSize').textContent = `${origDims.w} × ${origDims.h}px`;
+  document.getElementById('newSize').textContent = '—';
+  document.getElementById('scaleInfo').textContent = '—';
+
+  showStatus('upscale', 'loading', `Preparando imagen...`);
+  const prog = startProgress('upscaleProgressFill');
+
+  try {
+    // Resize en el navegador si la imagen es muy grande (sin sharp)
+    const fileToSend = await resizeImageIfNeeded(file, 4_000_000);
+    const wasTrimmed = fileToSend !== file;
+    if (wasTrimmed)
+      showStatus('upscale', 'loading', `Imagen redimensionada para optimizar. Enviando a Replicate...`);
+    else
+      showStatus('upscale', 'loading', `Enviando a prunaai/p-image-upscale...`);
+
+    const resultUrl = await callServer('/api/upscale', fileToSend, { scale: selectedScale });
+
+    finishProgress(prog);
+    state.upscale.resultUrl = resultUrl;
+
+    const elapsed = ((Date.now() - state.upscale.startTime) / 1000).toFixed(1);
+    document.getElementById('upscaleOrigImg').src = base64;
+    document.getElementById('upscaleResultImg').src = resultUrl;
+    document.getElementById('newSize').textContent = `${origDims.w * selectedScale} × ${origDims.h * selectedScale}px`;
+    document.getElementById('scaleInfo').textContent = `${selectedScale}×`;
+    document.getElementById('upscaleTime').textContent = `${elapsed}s`;
+    document.getElementById('upscaleResults').style.display = 'grid';
+
+    showStatus('upscale', 'success', `✓ Escalado ${selectedScale}× completado en ${elapsed}s`);
+    hideStatus('upscale');
+    initComparison();
+
+  } catch (err) {
+    finishProgress(prog);
+    showStatus('upscale', 'error', '✗ Error: ' + err.message);
+    document.getElementById('upscaleUploadZone').style.display = '';
+  }
+}
+
+function getImageDimensions(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve({ w: img.width, h: img.height });
+    img.src = src;
+  });
+}
+
+async function downloadUpscaled() {
+  if (!state.upscale.resultUrl) return;
+  try {
+    const res = await fetch(state.upscale.resultUrl);
+    const blob = await res.blob();
+    const ext = blob.type.includes('png') ? 'png' : 'jpg';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `upscaled-${selectedScale}x.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    window.open(state.upscale.resultUrl, '_blank');
+  }
+}
+
+// Comparison slider
+function initComparison() {
+  const wrap = document.getElementById('compWrap');
+  const line = document.getElementById('compLine');
+  const handle = document.getElementById('compHandle');
+  const after = document.getElementById('upscaleResultImg');
+  let dragging = false;
+
+  function setPos(p) {
+    p = Math.max(2, Math.min(98, p));
+    line.style.left = p + '%';
+    handle.style.left = p + '%';
+    after.style.clipPath = `inset(0 0 0 ${p}%)`;
+  }
+
+  wrap.addEventListener('mousedown', () => dragging = true);
+  document.addEventListener('mouseup', () => dragging = false);
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const r = wrap.getBoundingClientRect();
+    setPos(((e.clientX - r.left) / r.width) * 100);
+  });
+  wrap.addEventListener('touchstart', e => { dragging = true; e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchend', () => dragging = false);
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const r = wrap.getBoundingClientRect();
+    setPos(((e.touches[0].clientX - r.left) / r.width) * 100);
+  });
+}
+
+// ============================================================
+// FORMAT CONVERTER — LOCAL
+// ============================================================
+let convertFormat = 'image/jpeg';
+let convertExt = 'jpg';
+
+function selectFormat(el, fmt, ext) {
+  document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  convertFormat = fmt;
+  convertExt = ext;
+}
+
+function handleConvertFiles(fileList) {
+  const allowed = ['image/jpeg','image/png','image/webp','image/bmp','image/gif','image/tiff','image/svg+xml','image/avif'];
+  const newFiles = Array.from(fileList).filter(f => allowed.some(t => f.type === t) || f.name.match(/\.(jpg|jpeg|png|webp|bmp|gif|tiff?|svg|avif)$/i));
+
+  if (!newFiles.length) return alert('No se encontraron imágenes válidas.');
+
+  state.convert.files.push(...newFiles);
+  document.getElementById('convertUploadZone').style.display = 'none';
+  document.getElementById('convertOptions').style.display = 'block';
+  renderConvertList();
+}
+
+function renderConvertList() {
+  const list = document.getElementById('convertFileList');
+  document.getElementById('convertCount').textContent = state.convert.files.length;
+  list.innerHTML = '';
+  state.convert.files.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'file-list-item';
+    item.id = 'conv-item-' + i;
+    item.innerHTML = `
+      <span class="file-status" id="conv-status-${i}">🖼️</span>
+      <span class="file-name">${f.name}</span>
+      <span class="file-size">${(f.size / 1024).toFixed(0)} KB</span>
+    `;
+    list.appendChild(item);
+  });
+}
+
+async function convertAll() {
+  if (!state.convert.files.length) return;
+  const quality = parseInt(document.getElementById('convertQuality').value) / 100;
+  const doResize = document.getElementById('doResize').checked;
+  const maxW = parseInt(document.getElementById('resizeWidth').value) || 1920;
+
+  showStatus('convert', 'loading', `Convirtiendo ${state.convert.files.length} archivo(s) a .${convertExt}...`);
+
+  for (let i = 0; i < state.convert.files.length; i++) {
+    const f = state.convert.files[i];
+    document.getElementById('conv-status-' + i).textContent = '⏳';
+
+    try {
+      const blob = await convertFile(f, convertFormat, quality, doResize, maxW);
+      const baseName = f.name.replace(/\.[^.]+$/, '');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${baseName}.${convertExt}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      document.getElementById('conv-status-' + i).textContent = '✅';
+      await sleep(300);
+    } catch (err) {
+      document.getElementById('conv-status-' + i).textContent = '❌';
+      console.error('Error convirtiendo', f.name, err);
+    }
+  }
+
+  showStatus('convert', 'success', `✓ Conversión completada — ${state.convert.files.length} archivo(s)`);
+  hideStatus('convert', 5000);
+}
+
+function convertFile(file, format, quality, doResize, maxW) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+
+        if (doResize && w > maxW) {
+          h = Math.round(h * maxW / w);
+          w = maxW;
+        }
+
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+
+        // White background for JPG/AVIF (no transparency)
+        if (format !== 'image/png' && format !== 'image/webp') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+        }
+
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => {
+          if (blob) resolve(blob);
+          else reject(new Error('Canvas toBlob falló'));
+        }, format, quality);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function resetTool(tool) {
+  if (tool === 'bg') {
+    state.bg = { file: null, resultUrl: null };
+    document.getElementById('bgUploadZone').style.display = '';
+    document.getElementById('bgResults').style.display = 'none';
+    document.getElementById('bgStatus').classList.remove('visible');
+    document.getElementById('bgProgress').classList.remove('visible');
+    document.getElementById('bgFileInput').value = '';
+  }
+  if (tool === 'upscale') {
+    state.upscale = { file: null, scale: selectedScale, resultUrl: null };
+    document.getElementById('upscaleUploadZone').style.display = '';
+    document.getElementById('upscaleResults').style.display = 'none';
+    document.getElementById('upscaleStatus').classList.remove('visible');
+    document.getElementById('upscaleProgress').classList.remove('visible');
+    document.getElementById('upscaleFileInput').value = '';
+  }
+  if (tool === 'convert') {
+    state.convert.files = [];
+    document.getElementById('convertUploadZone').style.display = '';
+    document.getElementById('convertOptions').style.display = 'none';
+    document.getElementById('convertFileList').innerHTML = '';
+    document.getElementById('convertCount').textContent = '0';
+    document.getElementById('convertStatus').classList.remove('visible');
+    document.getElementById('convertFileInput').value = '';
+  }
+  if (tool === 'mockup') {
+    state.mockup.designImg = null;
+    document.getElementById('mockupCanvas').style.display = 'none';
+    document.getElementById('mockupPlaceholder').style.display = '';
+    document.getElementById('mockupDownloadBtn').disabled = true;
+    document.getElementById('mockupFileInput').value = '';
+  }
+}
+
+// ============================================================
+// MOCKUP GENERATOR
+// ============================================================
+const mockupLabels = {
+  tshirt: 'REMERA', hoodie: 'HOODIE', mug: 'TAZA',
+  poster: 'PÓSTER', tote: 'TOTE BAG', phone: 'CELULAR',
+  notebook: 'NOTEBOOK', sticker: 'STICKER'
+};
+
+function selectMockup(el, type) {
+  document.querySelectorAll('.mockup-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  state.mockup.type = type;
+  document.getElementById('currentMockupLabel').textContent = mockupLabels[type];
+  document.getElementById('mockupPlaceholder').querySelector('.big-icon').textContent = el.querySelector('.mockup-icon').textContent;
+  if (state.mockup.designImg) updateMockup();
+}
+
+function handleMockupFile(file) {
+  if (!file.type.match(/image\/(jpeg|png)/)) return alert('Solo JPG o PNG.');
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => { state.mockup.designImg = img; updateMockup(); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateMockup() {
+  if (!state.mockup.designImg) return;
+  const canvas = document.getElementById('mockupCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = 600, H = 600;
+  canvas.width = W; canvas.height = H;
+  canvas.style.display = 'block';
+  document.getElementById('mockupPlaceholder').style.display = 'none';
+  document.getElementById('mockupDownloadBtn').disabled = false;
+
+  const color = document.getElementById('garmentColor').value;
+  const sizePercent = parseInt(document.getElementById('designSize').value) / 100;
+  const yPercent = parseInt(document.getElementById('designY').value) / 100;
+  const opacity = parseInt(document.getElementById('designOpacity').value) / 100;
+
+  ctx.clearRect(0, 0, W, H);
+  drawMockupShape(ctx, state.mockup.type, color, W, H);
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  const area = getMockupDesignArea(state.mockup.type, W, H);
+  const dW = area.w * sizePercent;
+  const dH = (state.mockup.designImg.height / state.mockup.designImg.width) * dW;
+  const dX = area.cx - dW / 2;
+  const dY = area.y + (area.h * (yPercent - 0.2));
+  ctx.shadowColor = 'rgba(0,0,0,0.2)';
+  ctx.shadowBlur = 8;
+  ctx.drawImage(state.mockup.designImg, dX, dY, dW, dH);
+  ctx.restore();
+}
+
+function getMockupDesignArea(type, W, H) {
+  const areas = {
+    tshirt:   { cx: W*0.5, y: H*0.25, w: W*0.6, h: H*0.4 },
+    hoodie:   { cx: W*0.5, y: H*0.28, w: W*0.5, h: H*0.35 },
+    mug:      { cx: W*0.52, y: H*0.3, w: W*0.45, h: H*0.4 },
+    poster:   { cx: W*0.5, y: H*0.1, w: W*0.75, h: H*0.8 },
+    tote:     { cx: W*0.5, y: H*0.3, w: W*0.5, h: H*0.45 },
+    phone:    { cx: W*0.5, y: H*0.2, w: W*0.38, h: H*0.6 },
+    notebook: { cx: W*0.5, y: H*0.15, w: W*0.55, h: H*0.65 },
+    sticker:  { cx: W*0.5, y: H*0.15, w: W*0.65, h: H*0.65 }
+  };
+  return areas[type] || areas.tshirt;
+}
+
+function drawMockupShape(ctx, type, color, W, H) {
+  ctx.fillStyle = '#1a1a22';
+  ctx.fillRect(0, 0, W, H);
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.7);
+  grad.addColorStop(0, 'rgba(255,255,255,0.04)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  const drawFn = { tshirt: drawTShirt, hoodie: drawHoodie, mug: drawMug, poster: drawPoster, tote: drawToteBag, phone: drawPhone, notebook: drawNotebook, sticker: drawSticker };
+  if (drawFn[type]) drawFn[type](ctx, W, H, color);
+}
+
+function downloadMockup() {
+  const canvas = document.getElementById('mockupCanvas');
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mockup-${state.mockup.type}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+}
+
+// ============================================================
+// MOCKUP SHAPES
+// ============================================================
+function drawTShirt(ctx, W, H, color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(W*0.1, H*0.18); ctx.lineTo(W*0.04, H*0.38); ctx.lineTo(W*0.25, H*0.42); ctx.lineTo(W*0.28, H*0.32);
+  ctx.lineTo(W*0.22, H*0.32); ctx.lineTo(W*0.18, H*0.82); ctx.lineTo(W*0.82, H*0.82); ctx.lineTo(W*0.78, H*0.32);
+  ctx.lineTo(W*0.72, H*0.32); ctx.lineTo(W*0.75, H*0.42); ctx.lineTo(W*0.96, H*0.38); ctx.lineTo(W*0.9, H*0.18);
+  ctx.lineTo(W*0.64, H*0.22); ctx.quadraticCurveTo(W*0.5, H*0.30, W*0.36, H*0.22);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W*0.36, H*0.22); ctx.quadraticCurveTo(W*0.5, H*0.32, W*0.64, H*0.22);
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.beginPath();
+  ctx.moveTo(W*0.5, H*0.3); ctx.lineTo(W*0.44, H*0.82); ctx.lineTo(W*0.56, H*0.82); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawHoodie(ctx, W, H, color) {
+  ctx.save();
+  ctx.fillStyle = color; ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(W*0.08, H*0.2); ctx.lineTo(W*0.02, H*0.45); ctx.lineTo(W*0.22, H*0.48); ctx.lineTo(W*0.25, H*0.35);
+  ctx.lineTo(W*0.18, H*0.34); ctx.lineTo(W*0.16, H*0.84); ctx.lineTo(W*0.84, H*0.84); ctx.lineTo(W*0.82, H*0.34);
+  ctx.lineTo(W*0.75, H*0.35); ctx.lineTo(W*0.78, H*0.48); ctx.lineTo(W*0.98, H*0.45); ctx.lineTo(W*0.92, H*0.2);
+  ctx.lineTo(W*0.68, H*0.17); ctx.quadraticCurveTo(W*0.62, H*0.08, W*0.5, H*0.06);
+  ctx.quadraticCurveTo(W*0.38, H*0.08, W*0.32, H*0.17); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W*0.38, H*0.22); ctx.quadraticCurveTo(W*0.5, H*0.35, W*0.62, H*0.22);
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = 'rgba(0,0,0,0.07)'; ctx.beginPath();
+  ctx.roundRect(W*0.3, H*0.62, W*0.4, H*0.14, 4); ctx.fill();
+  ctx.restore();
+}
+
+function drawMug(ctx, W, H, color) {
+  ctx.save();
+  ctx.fillStyle = color; ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(W*0.2, H*0.22); ctx.lineTo(W*0.28, H*0.82);
+  ctx.quadraticCurveTo(W*0.5, H*0.87, W*0.72, H*0.82); ctx.lineTo(W*0.8, H*0.22);
+  ctx.quadraticCurveTo(W*0.5, H*0.17, W*0.2, H*0.22); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W*0.76, H*0.38);
+  ctx.quadraticCurveTo(W*0.94, H*0.38, W*0.94, H*0.52);
+  ctx.quadraticCurveTo(W*0.94, H*0.65, W*0.76, H*0.65);
+  ctx.strokeStyle = color; ctx.lineWidth = 14; ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(W*0.5, H*0.22, W*0.3, H*0.04, 0, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.restore();
+}
+
+function drawPoster(ctx, W, H, color) {
+  ctx.save();
+  const margin = W*0.1;
+  ctx.fillStyle = color; ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 20;
+  ctx.shadowOffsetX = 6; ctx.shadowOffsetY = 6;
+  ctx.roundRect(margin, H*0.06, W-margin*2, H*0.88, 4); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1;
+  ctx.roundRect(W*0.1, H*0.06, W*0.8, H*0.88, 4); ctx.stroke(); ctx.restore();
+}
+
+function drawToteBag(ctx, W, H, color) {
+  ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1.5;
+  [{ m: W*0.33, M: W*0.43 }, { m: W*0.57, M: W*0.67 }].forEach(({m, M}) => {
+    ctx.beginPath(); ctx.moveTo(m, H*0.22);
+    ctx.quadraticCurveTo(m-W*0.03, H*0.08, m+W*0.05, H*0.08);
+    ctx.quadraticCurveTo(M-W*0.05, H*0.08, M, H*0.22);
+    ctx.strokeStyle = color; ctx.lineWidth = 10; ctx.stroke();
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+  ctx.fillStyle = color; ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(W*0.15, H*0.22); ctx.lineTo(W*0.12, H*0.82);
+  ctx.quadraticCurveTo(W*0.5, H*0.88, W*0.88, H*0.82); ctx.lineTo(W*0.85, H*0.22);
+  ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+}
+
+function drawPhone(ctx, W, H, color) {
+  ctx.save();
+  const px=W*0.28, py=H*0.08, pw=W*0.44, ph=H*0.84;
+  ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 18;
+  ctx.shadowOffsetX = 4; ctx.shadowOffsetY = 4;
+  ctx.fillStyle = '#1a1a1a'; ctx.roundRect(px, py, pw, ph, 30); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.fillStyle = color; ctx.roundRect(px+6, py+12, pw-12, ph-24, 24); ctx.fill();
+  ctx.fillStyle = '#1a1a1a'; ctx.roundRect(W*0.42, py+14, W*0.16, H*0.035, 8); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.roundRect(W*0.42, py+ph-28, W*0.16, 4, 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawNotebook(ctx, W, H, color) {
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 16;
+  ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 5;
+  ctx.fillStyle = adjustColor(color, -30); ctx.roundRect(W*0.14, H*0.08, W*0.08, H*0.84, [6,0,0,6]); ctx.fill();
+  ctx.fillStyle = color; ctx.roundRect(W*0.2, H*0.08, W*0.64, H*0.84, [0,6,6,0]); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1;
+  for (let i = 0; i < 8; i++) {
+    const y = H*(0.28 + i*0.072);
+    ctx.beginPath(); ctx.moveTo(W*0.28, y); ctx.lineTo(W*0.78, y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawSticker(ctx, W, H, color) {
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12;
+  ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 3;
+  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(W*0.1, H*0.1, W*0.8, H*0.8, 20); ctx.fill();
+  ctx.fillStyle = color; ctx.beginPath(); ctx.roundRect(W*0.14, H*0.14, W*0.72, H*0.72, 15); ctx.fill();
+  ctx.restore();
+}
+
+function adjustColor(hex, amount) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+  const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + amount));
+  const b = Math.max(0, Math.min(255, (num & 0xff) + amount));
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+// ============================================================
+// GENERIC DOWNLOAD
+// ============================================================
+function downloadImage(imgId, filename) {
+  const img = document.getElementById(imgId);
+  if (!img.src) return;
+  const a = document.createElement('a');
+  a.href = img.src;
+  a.download = filename;
+  a.click();
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// FIREBASE AUTH
+// ════════════════════════════════════════════════════════════════
+// ── AUTH ──
+let currentUser = null;
+let idToken = null;
+
+async function initFirebase() {
+  const { initializeApp }     = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const { getAuth, onAuthStateChanged, signOut } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+
+  const cfg = await fetch('/api/firebase-config').then(r => r.json());
+  const auth = getAuth(initializeApp(cfg));
+
+  window._fbSignOut = () => signOut(auth);
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+    currentUser = user;
+    idToken = await user.getIdToken();
+    await refreshUserData();
+  });
+}
+
+async function refreshUserData() {
+  if (!currentUser) return;
+  idToken = await currentUser.getIdToken(true);
+  const res  = await fetch('/api/me', { headers: { Authorization: `Bearer ${idToken}` } });
+  const data = await res.json();
+  renderLoggedIn(data);
+}
+
+function renderLoggedIn({ email, credits }) {
+  const ha = document.getElementById('headerAuth');
+  ha.innerHTML = `
+    <div class="credits-badge" onclick="openPlanesModal()" title="Comprar más créditos">
+      <span class="credit-icon">⚡</span>
+      <span class="credit-num">${credits}</span>
+      <span class="credit-label">CRÉDITOS</span>
+    </div>
+    <div class="user-btn" onclick="logout()">
+      <span>👤</span>
+      <span>${email.split('@')[0]}</span>
+      <span style="color:var(--text3)">· salir</span>
+    </div>`;
+}
+
+function updateCreditsDisplay(credits) {
+  const badge = document.querySelector('.credits-badge');
+  if (badge) badge.querySelector('.credit-num').textContent = credits;
+}
+
+async function logout() {
+  await window._fbSignOut?.();
+  window.location.href = '/login';
+}
+// ── PLANES MODAL ──
+function openPlanesModal() {
+  document.getElementById('planesModal').classList.remove('hidden');
+}
+function closePlanesModal() {
+  document.getElementById('planesModal').classList.add('hidden');
+}
+
+async function comprarPlan(plan) {
+  if (!currentUser) { openAuth(); return; }
+  const btn = document.getElementById('btn-' + plan);
+  btn.textContent = 'Redirigiendo...';
+  btn.disabled = true;
+
+  try {
+    idToken = await currentUser.getIdToken(true);
+    const res  = await fetch('/api/crear-preferencia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ plan })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    window.location.href = data.init_point;
+  } catch (err) {
+    btn.textContent = 'Comprar';
+    btn.disabled = false;
+    showToast('Error al iniciar pago: ' + err.message, 'error');
+  }
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// ── GET TOKEN (para callServer) ──
+async function getAuthToken() {
+  if (!currentUser) throw new Error('Iniciá sesión para usar esta función.');
+  return await currentUser.getIdToken(true);
+}
+
+// ── Verificar pago al volver de MP ──
+function checkPaymentReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('pago') === 'ok') {
+    const plan = params.get('plan') || '';
+    showToast(`✓ Pago aprobado${plan ? ' · plan ' + plan : ''} — créditos acreditados`, 'success');
+    window.history.replaceState({}, '', '/');
+    setTimeout(refreshUserData, 2000);
+  } else if (params.get('pago') === 'error') {
+    showToast('El pago no se completó. Podés intentarlo de nuevo.', 'error');
+    window.history.replaceState({}, '', '/');
+  }
+}
+
+// ── INIT ──
+initFirebase().then(checkPaymentReturn);
+
+</script>

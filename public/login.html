@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLYPH — Acceder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import {
+    getAuth,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    sendPasswordResetEmail,
+    onAuthStateChanged
+  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+  // Config inyectada desde el servidor
+  const res    = await fetch('/api/firebase-config');
+  const config = await res.json();
+  const app    = initializeApp(config);
+  const auth   = getAuth(app);
+
+  // Si ya está logueado, redirigir directo a la app
+  onAuthStateChanged(auth, user => {
+    if (user) window.location.href = '/app';
+  });
+
+  // ── TABS ──
+  const tabLogin    = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const formLogin   = document.getElementById('formLogin');
+  const formRegister = document.getElementById('formRegister');
+
+  tabLogin.addEventListener('click', () => {
+    tabLogin.classList.add('active');
+    tabRegister.classList.remove('active');
+    formLogin.classList.add('active');
+    formRegister.classList.remove('active');
+    clearErrors();
+  });
+
+  tabRegister.addEventListener('click', () => {
+    tabRegister.classList.add('active');
+    tabLogin.classList.remove('active');
+    formRegister.classList.add('active');
+    formLogin.classList.remove('active');
+    clearErrors();
+  });
+
+  // ── LOGIN ──
+  document.getElementById('btnLogin').addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPass').value;
+    if (!email || !pass) return showError('loginError', 'Completá todos los campos.');
+
+    setLoading('btnLogin', true);
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged redirige automáticamente
+    } catch (err) {
+      setLoading('btnLogin', false);
+      showError('loginError', translateError(err.code));
+    }
+  });
+
+  // Enter en login
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btnLogin').click();
+  });
+
+  // ── REGISTER ──
+  document.getElementById('btnRegister').addEventListener('click', async () => {
+    const email = document.getElementById('regEmail').value.trim();
+    const pass  = document.getElementById('regPass').value;
+    const pass2 = document.getElementById('regPass2').value;
+
+    if (!email || !pass || !pass2) return showError('regError', 'Completá todos los campos.');
+    if (pass !== pass2)            return showError('regError', 'Las contraseñas no coinciden.');
+    if (pass.length < 6)           return showError('regError', 'La contraseña debe tener al menos 6 caracteres.');
+
+    setLoading('btnRegister', true);
+    try {
+      await createUserWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged redirige automáticamente
+    } catch (err) {
+      setLoading('btnRegister', false);
+      showError('regError', translateError(err.code));
+    }
+  });
+
+  // ── RESET PASSWORD ──
+  document.getElementById('linkReset').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    if (!email) return showError('loginError', 'Ingresá tu email para recuperar la contraseña.');
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showError('loginError', '✓ Te enviamos un email para restablecer tu contraseña.', 'success');
+    } catch (err) {
+      showError('loginError', translateError(err.code));
+    }
+  });
+
+  // ── HELPERS ──
+  function showError(id, msg, type = 'error') {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = 'field-error ' + type;
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.textContent = loading ? 'Cargando...' : (btnId === 'btnLogin' ? 'Ingresar' : 'Crear cuenta');
+  }
+
+  function translateError(code) {
+    const errors = {
+      'auth/invalid-email':           'Email inválido.',
+      'auth/user-not-found':          'No existe una cuenta con ese email.',
+      'auth/wrong-password':          'Contraseña incorrecta.',
+      'auth/invalid-credential':      'Email o contraseña incorrectos.',
+      'auth/email-already-in-use':    'Ya existe una cuenta con ese email.',
+      'auth/weak-password':           'La contraseña debe tener al menos 6 caracteres.',
+      'auth/too-many-requests':       'Demasiados intentos. Esperá unos minutos.',
+      'auth/network-request-failed':  'Error de conexión. Verificá tu internet.',
+    };
+    return errors[code] || 'Ocurrió un error. Intentá de nuevo.';
+  }
+</script>
+
+<style>
+:root {
+  --bg:       #0a0a0b;
+  --surface:  #111113;
+  --surface2: #18181c;
+  --surface3: #222228;
+  --border:   #2a2a32;
+  --accent:   #c8f135;
+  --accent2:  #7c6af7;
+  --text:     #e8e8ec;
+  --text2:    #8888a0;
+  --text3:    #444458;
+  --danger:   #ff4757;
+  --success:  #2ed573;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Grid background */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* Glow */
+body::after {
+  content: '';
+  position: fixed;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(200,241,53,.06) 0%, transparent 65%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ── BACK BUTTON ── */
+.back-btn {
+  position: fixed;
+  top: 24px; left: 28px;
+  z-index: 10;
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 1px;
+  color: var(--text3);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: all .2s;
+}
+
+.back-btn:hover {
+  border-color: var(--text2);
+  color: var(--text);
+}
+
+.back-btn svg {
+  width: 13px; height: 13px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round;
+}
+
+/* ── LAYOUT ── */
+.login-wrap {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 440px;
+  padding: 24px;
+  animation: fadeUp .5s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── LOGO ── */
+.auth-logo {
+  display: flex; align-items: center;
+  justify-content: center; gap: 10px;
+  margin-bottom: 8px;
+}
+
+.logo-dot {
+  width: 8px; height: 8px;
+  background: var(--accent); border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:.4; transform:scale(.7); }
+}
+
+.logo-text {
+  font-size: 26px; font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.auth-tagline {
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text3);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+/* ── BOX ── */
+.auth-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.03),
+    0 24px 60px rgba(0,0,0,.5),
+    0 0 80px rgba(200,241,53,.04);
+}
+
+/* ── TABS ── */
+.auth-tabs {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+}
+
+.auth-tab {
+  padding: 16px;
+  background: transparent; border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; letter-spacing: 1px;
+  color: var(--text3); cursor: pointer;
+  text-transform: uppercase;
+  transition: all .2s;
+  position: relative;
+}
+
+.auth-tab::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform .2s;
+}
+
+.auth-tab.active {
+  color: var(--text);
+  background: var(--surface2);
+}
+
+.auth-tab.active::after { transform: scaleX(1); }
+.auth-tab:hover:not(.active) { color: var(--text2); }
+
+/* ── FORMS ── */
+.auth-form {
+  padding: 32px;
+  display: none;
+}
+
+.auth-form.active { display: block; }
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 1.5px;
+  color: var(--text3); text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.field input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.field input:focus {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 3px rgba(124,106,247,.12);
+}
+
+.field input::placeholder { color: var(--text3); }
+
+/* ── ERROR / SUCCESS ── */
+.field-error {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; min-height: 16px;
+  margin-top: 14px; text-align: center;
+  line-height: 1.5;
+}
+
+.field-error.error { color: var(--danger); }
+.field-error.success { color: var(--success); }
+
+/* ── SUBMIT BTN ── */
+.auth-submit {
+  width: 100%; padding: 13px;
+  background: var(--accent); color: #0a0a0b;
+  border: none; border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 1px; cursor: pointer;
+  text-transform: uppercase;
+  transition: all .2s;
+  margin-top: 4px;
+}
+
+.auth-submit:hover {
+  background: #d4f545;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(200,241,53,.3);
+}
+
+.auth-submit:disabled {
+  opacity: .5; cursor: not-allowed;
+  transform: none; box-shadow: none;
+}
+
+/* ── RESET LINK ── */
+.reset-link {
+  display: block; text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--text3);
+  text-decoration: none; letter-spacing: .5px;
+  margin-top: -10px; margin-bottom: 16px;
+  transition: color .2s;
+}
+
+.reset-link:hover { color: var(--accent2); }
+
+/* ── FOOTER NOTE ── */
+.auth-note {
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--text3);
+  letter-spacing: .5px;
+  padding: 16px 32px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+  line-height: 1.6;
+}
+
+.auth-note a {
+  color: var(--accent2); text-decoration: none;
+}
+
+.auth-note a:hover { text-decoration: underline; }
+
+/* ── DIVIDER ── */
+.field-divider {
+  height: 1px; background: var(--border);
+  margin: 20px 0;
+}
+
+@media (max-width: 480px) {
+  .login-wrap { padding: 16px; }
+  .auth-form { padding: 24px 20px; }
+  .back-btn { top: 16px; left: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Volver a landing -->
+<a href="/" class="back-btn">
+  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  Volver
+</a>
+
+<div class="login-wrap">
+
+  <!-- Logo -->
+  <div class="auth-logo">
+    <div class="logo-dot"></div>
+    <div class="logo-text">GLYPH</div>
+  </div>
+  <div class="auth-tagline">Designer Toolkit</div>
+
+  <!-- Box -->
+  <div class="auth-box">
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin">Ingresar</button>
+      <button class="auth-tab" id="tabRegister">Registrarse</button>
+    </div>
+
+    <!-- Form Login -->
+    <div class="auth-form active" id="formLogin">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <a href="#" class="reset-link" id="linkReset">¿Olvidaste tu contraseña?</a>
+
+      <button class="auth-submit" id="btnLogin">Ingresar</button>
+      <div class="field-error error" id="loginError"></div>
+    </div>
+
+    <!-- Form Register -->
+    <div class="auth-form" id="formRegister">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="regPass" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="regPass2" placeholder="Repetí la contraseña" autocomplete="new-password">
+      </div>
+
+      <button class="auth-submit" id="btnRegister">Crear cuenta</button>
+      <div class="field-error error" id="regError"></div>
+    </div>
+
+    <!-- Footer note -->
+    <div class="auth-note">
+      Al registrarte aceptás los <a href="#">términos de uso</a>.<br>
+      Pagos procesados con Mercado Pago en pesos argentinos 🇦🇷
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLYPH — Prepará imágenes listas para producir en segundos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0a0a0b;
+  --surface:  #111113;
+  --surface2: #18181c;
+  --surface3: #222228;
+  --border:   #2a2a32;
+  --accent:   #c8f135;
+  --accent2:  #7c6af7;
+  --text:     #e8e8ec;
+  --text2:    #8888a0;
+  --text3:    #444458;
+  --danger:   #ff4757;
+  --success:  #2ed573;
+  --accent-glow: rgba(200,241,53,0.15);
+  --accent2-glow: rgba(124,106,247,0.15);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ── GRID BG ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── NOISE TEXTURE ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 0;
+}
+
+section, nav, footer { position: relative; z-index: 1; }
+
+/* ════════════════════════════════════════
+   NAV
+════════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 60px;
+  border-bottom: 1px solid transparent;
+  transition: all .4s;
+}
+
+nav.scrolled {
+  background: rgba(10,10,11,0.92);
+  border-color: var(--border);
+  backdrop-filter: blur(16px);
+}
+
+.nav-logo {
+  font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+  display: flex; align-items: center; gap: 9px;
+  text-decoration: none; color: var(--text);
+}
+
+.nav-dot {
+  width: 7px; height: 7px;
+  background: var(--accent); border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:.4; transform:scale(.7); }
+}
+
+.nav-links {
+  display: flex; align-items: center; gap: 8px;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 1px;
+  color: var(--text3); text-decoration: none;
+  padding: 7px 14px; border-radius: 6px;
+  transition: color .2s;
+  text-transform: uppercase;
+}
+
+.nav-links a:hover { color: var(--text); }
+
+.nav-cta {
+  background: var(--accent) !important;
+  color: #0a0a0b !important;
+  font-weight: 600 !important;
+}
+
+.nav-cta:hover { background: #d4f545 !important; }
+
+/* ════════════════════════════════════════
+   HERO
+════════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 140px 40px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glow central */
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 800px; height: 800px;
+  background: radial-gradient(circle, rgba(200,241,53,.07) 0%, transparent 65%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Glow accent2 */
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(124,106,247,.06) 0%, transparent 65%);
+  bottom: 10%; right: -10%;
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px;
+  background: rgba(200,241,53,.07);
+  border: 1px solid rgba(200,241,53,.2);
+  border-radius: 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 1.5px;
+  color: var(--accent);
+  margin-bottom: 32px;
+  animation: fadeUp .8s ease both;
+}
+
+.hero-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+h1 {
+  font-size: clamp(38px, 6vw, 76px);
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1.0;
+  max-width: 900px;
+  margin: 0 auto 24px;
+  animation: fadeUp .8s .1s ease both;
+}
+
+h1 .accent { color: var(--accent); }
+h1 .dim { color: var(--text2); }
+
+.hero-sub {
+  font-size: 18px;
+  color: var(--text2);
+  max-width: 580px;
+  line-height: 1.6;
+  margin: 0 auto 40px;
+  font-weight: 400;
+  animation: fadeUp .8s .2s ease both;
+}
+
+.hero-actions {
+  display: flex; align-items: center; gap: 12px;
+  justify-content: center; flex-wrap: wrap;
+  animation: fadeUp .8s .3s ease both;
+  margin-bottom: 20px;
+}
+
+.btn-primary {
+  padding: 15px 32px;
+  background: var(--accent); color: #0a0a0b;
+  border: none; border-radius: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px; font-weight: 600; letter-spacing: 1px;
+  cursor: pointer; text-decoration: none;
+  text-transform: uppercase;
+  transition: all .2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+
+.btn-primary:hover {
+  background: #d4f545;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(200,241,53,.35);
+}
+
+.btn-secondary {
+  padding: 15px 28px;
+  background: transparent; color: var(--text2);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px; letter-spacing: 1px;
+  cursor: pointer; text-decoration: none;
+  text-transform: uppercase;
+  transition: all .2s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--text2); color: var(--text);
+}
+
+.mp-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text3);
+  letter-spacing: .5px;
+  animation: fadeUp .8s .4s ease both;
+}
+
+.mp-badge::before {
+  content: '🇦🇷';
+  font-size: 14px;
+}
+
+/* APP MOCKUP */
+.hero-mockup {
+  margin-top: 64px;
+  position: relative;
+  animation: fadeUp .9s .5s ease both;
+  max-width: 900px;
+  width: 100%;
+}
+
+.mockup-glow {
+  position: absolute; inset: -40px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(200,241,53,.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.mockup-frame {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.04),
+    0 40px 80px rgba(0,0,0,.6),
+    0 0 120px rgba(200,241,53,.06);
+}
+
+.mockup-bar {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 18px;
+  display: flex; align-items: center; gap: 12px;
+}
+
+.mockup-dots { display:flex; gap:6px; }
+.mockup-dots span {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--surface3);
+}
+.mockup-dots span:nth-child(1) { background: #ff5f57; }
+.mockup-dots span:nth-child(2) { background: #febc2e; }
+.mockup-dots span:nth-child(3) { background: #28c840; }
+
+.mockup-url {
+  flex: 1;
+  background: var(--surface3); border-radius: 6px;
+  padding: 5px 12px;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text3); letter-spacing: .5px;
+  text-align: center; max-width: 300px; margin: 0 auto;
+}
+
+.mockup-body {
+  padding: 24px;
+}
+
+/* Mini app preview */
+.mini-app {
+  display: grid; grid-template-columns: 240px 1fr; gap: 16px;
+}
+
+.mini-sidebar {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.mini-logo {
+  font-size: 14px; font-weight: 800;
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 16px; color: var(--text);
+}
+
+.mini-dot { width:6px;height:6px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px var(--accent); }
+
+.mini-nav-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 7px;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text3); margin-bottom: 4px;
+  transition: all .2s;
+}
+
+.mini-nav-item.active {
+  background: rgba(200,241,53,.1);
+  border: 1px solid rgba(200,241,53,.2);
+  color: var(--accent);
+}
+
+.mini-main { display: flex; flex-direction: column; gap: 14px; }
+
+.mini-upload {
+  border: 1.5px dashed var(--border);
+  border-radius: 10px; padding: 32px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--surface2), var(--surface));
+}
+
+.mini-upload-icon { font-size: 28px; margin-bottom: 8px; opacity: .5; }
+.mini-upload-txt { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.mini-upload-sub { font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); letter-spacing:1px; }
+
+.mini-result-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+
+.mini-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px;
+}
+
+.mini-card-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--text3); margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.mini-img-placeholder {
+  aspect-ratio: 4/3; border-radius: 6px;
+  background: var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; opacity: .4;
+}
+
+.mini-img-placeholder.checker {
+  background-image:
+    linear-gradient(45deg,#1a1a20 25%,transparent 25%),
+    linear-gradient(-45deg,#1a1a20 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#1a1a20 75%),
+    linear-gradient(-45deg,transparent 75%,#1a1a20 75%);
+  background-size:12px 12px;
+  background-position:0 0,0 6px,6px -6px,-6px 0px;
+  background-color:#111113;
+}
+
+.mini-btn-row {
+  display: flex; gap: 8px; margin-top: 10px;
+}
+
+.mini-btn {
+  padding: 6px 12px; border-radius: 6px;
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: .5px; cursor: pointer; border: none;
+  font-weight: 500;
+}
+
+.mini-btn.primary { background: var(--accent); color: #0a0a0b; }
+.mini-btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+
+/* ════════════════════════════════════════
+   SECTION SHARED
+════════════════════════════════════════ */
+.section {
+  padding: 100px 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 2px;
+  color: var(--accent); text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.section-tag::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--accent);
+}
+
+h2 {
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+
+h2 .accent { color: var(--accent); }
+h2 .dim { color: var(--text2); }
+
+.section-sub {
+  font-size: 17px; color: var(--text2);
+  line-height: 1.6; max-width: 540px;
+}
+
+/* Divider */
+.divider-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 0 60px;
+}
+
+/* ════════════════════════════════════════
+   DOLOR
+════════════════════════════════════════ */
+.dolor-section { background: transparent; }
+
+.dolor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 48px;
+}
+
+.dolor-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .3s, transform .3s;
+}
+
+.dolor-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.dolor-card:hover {
+  border-color: var(--border);
+  transform: translateY(-4px);
+}
+
+.dolor-card:hover::before { opacity: 1; }
+
+.dolor-icon {
+  font-size: 26px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.dolor-titulo {
+  font-size: 16px; font-weight: 700;
+  margin-bottom: 8px; letter-spacing: -.3px;
+}
+
+.dolor-texto {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--text2);
+  line-height: 1.6;
+}
+
+/* ════════════════════════════════════════
+   HERRAMIENTAS
+════════════════════════════════════════ */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 48px;
+}
+
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  display: flex; gap: 24px;
+  transition: border-color .3s, transform .3s;
+  position: relative; overflow: hidden;
+}
+
+.tool-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 0% 0%, var(--accent-glow), transparent 60%);
+  opacity: 0; transition: opacity .4s;
+}
+
+.tool-card:hover { transform: translateY(-3px); border-color: rgba(200,241,53,.2); }
+.tool-card:hover::after { opacity: 1; }
+
+.tool-icon-wrap {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  position: relative; z-index: 1;
+}
+
+.tool-info { position: relative; z-index: 1; }
+
+.tool-nombre {
+  font-size: 17px; font-weight: 700;
+  letter-spacing: -.3px; margin-bottom: 8px;
+}
+
+.tool-desc {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--text2);
+  line-height: 1.6; margin-bottom: 14px;
+}
+
+.tool-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  background: rgba(200,241,53,.08);
+  border: 1px solid rgba(200,241,53,.15);
+  border-radius: 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--accent);
+  letter-spacing: .5px;
+}
+
+/* ════════════════════════════════════════
+   SUBLIMADORES
+════════════════════════════════════════ */
+.sub-section {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+
+.sub-section::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(124,106,247,.06) 0%, transparent 65%);
+  top: -100px; right: -100px;
+  pointer-events: none;
+}
+
+.sub-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 100px 60px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; align-items: center;
+}
+
+.sub-stats {
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+.stat-item {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color .3s;
+}
+
+.stat-item:hover { border-color: rgba(200,241,53,.2); }
+
+.stat-number {
+  font-size: 36px; font-weight: 800;
+  color: var(--accent); letter-spacing: -2px;
+  line-height: 1; flex-shrink: 0;
+}
+
+.stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text2);
+  line-height: 1.5; padding-top: 4px;
+}
+
+/* ════════════════════════════════════════
+   ARGENTINA
+════════════════════════════════════════ */
+.arg-section {
+  position: relative; overflow: hidden;
+}
+
+.arg-section::before {
+  content: '';
+  position: absolute;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(200,241,53,.05) 0%, transparent 65%);
+  bottom: -200px; left: -200px;
+  pointer-events: none;
+}
+
+.arg-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 100px 60px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; align-items: center;
+}
+
+.arg-visual {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  position: relative; overflow: hidden;
+}
+
+.arg-visual::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #74b9ff, #0984e3);
+}
+
+.arg-flag-bar {
+  display: flex; gap: 8px; margin-bottom: 28px;
+}
+
+.flag-stripe {
+  height: 4px; flex: 1; border-radius: 2px;
+}
+
+.arg-payment-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  transition: border-color .2s;
+}
+
+.arg-payment-row:hover { border-color: rgba(200,241,53,.2); }
+
+.arg-payment-icon { font-size: 20px; }
+.arg-payment-name { color: var(--text2); flex: 1; }
+.arg-payment-check { color: var(--success); font-size: 14px; }
+
+.arg-price-highlight {
+  margin-top: 24px;
+  padding: 20px;
+  background: rgba(200,241,53,.06);
+  border: 1px solid rgba(200,241,53,.2);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.arg-price-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--accent); margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.arg-price-num {
+  font-size: 40px; font-weight: 800;
+  color: var(--text); letter-spacing: -2px;
+}
+
+.arg-price-num span {
+  font-size: 18px; color: var(--text2);
+  font-weight: 400; letter-spacing: 0;
+}
+
+.arg-price-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text3);
+  margin-top: 4px;
+}
+
+/* ════════════════════════════════════════
+   PRECIOS
+════════════════════════════════════════ */
+.pricing-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 100px 60px;
+  text-align: center;
+}
+
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 56px;
+  text-align: left;
+}
+
+.pricing-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px 32px;
+  position: relative;
+  transition: transform .3s, border-color .3s;
+}
+
+.pricing-card:hover { transform: translateY(-6px); }
+
+.pricing-card.featured {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--surface), rgba(200,241,53,.04));
+  box-shadow: 0 0 60px rgba(200,241,53,.08);
+}
+
+.pricing-badge {
+  position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: #0a0a0b;
+  padding: 4px 16px; border-radius: 20px;
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; white-space: nowrap;
+}
+
+.pricing-plan {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--text3); text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.pricing-price {
+  font-size: 44px; font-weight: 800;
+  letter-spacing: -2px; line-height: 1;
+  margin-bottom: 6px;
+}
+
+.pricing-price sup {
+  font-size: 20px; letter-spacing: 0;
+  vertical-align: super; color: var(--text2);
+}
+
+.pricing-period {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text3);
+  margin-bottom: 28px;
+}
+
+.pricing-divider {
+  height: 1px; background: var(--border);
+  margin: 24px 0;
+}
+
+.pricing-features {
+  list-style: none;
+  display: flex; flex-direction: column; gap: 12px;
+  margin-bottom: 32px;
+}
+
+.pricing-features li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--text2); line-height: 1.4;
+}
+
+.pricing-features li::before {
+  content: '✓';
+  color: var(--accent); flex-shrink: 0;
+  font-size: 13px;
+}
+
+.pricing-features li.dim::before { color: var(--text3); }
+.pricing-features li.dim { color: var(--text3); }
+
+.pricing-btn {
+  width: 100%; padding: 13px;
+  border-radius: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; font-weight: 600; letter-spacing: 1px;
+  cursor: pointer; border: none; text-transform: uppercase;
+  transition: all .2s; text-decoration: none;
+  display: block; text-align: center;
+}
+
+.pricing-btn.outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+}
+
+.pricing-btn.outline:hover { border-color: var(--text2); color: var(--text); }
+
+.pricing-btn.filled {
+  background: var(--accent); color: #0a0a0b;
+}
+
+.pricing-btn.filled:hover {
+  background: #d4f545;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(200,241,53,.3);
+}
+
+.pricing-note {
+  margin-top: 32px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--text3); line-height: 1.7;
+}
+
+/* ════════════════════════════════════════
+   FAQ
+════════════════════════════════════════ */
+.faq-section {
+  max-width: 720px; margin: 0 auto;
+  padding: 80px 60px;
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--border);
+  padding: 24px 0;
+  cursor: pointer;
+}
+
+.faq-item:last-child { border-bottom: none; }
+
+.faq-q {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 16px; font-weight: 600; letter-spacing: -.3px;
+  color: var(--text);
+}
+
+.faq-icon {
+  width: 28px; height: 28px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 16px;
+  color: var(--text3); flex-shrink: 0; transition: all .2s;
+}
+
+.faq-item.open .faq-icon {
+  background: rgba(200,241,53,.1);
+  border-color: rgba(200,241,53,.3);
+  color: var(--accent);
+  transform: rotate(45deg);
+}
+
+.faq-a {
+  max-height: 0; overflow: hidden;
+  transition: max-height .35s ease, padding .35s;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px; color: var(--text2); line-height: 1.7;
+}
+
+.faq-item.open .faq-a {
+  max-height: 200px;
+  padding-top: 14px;
+}
+
+/* ════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════ */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 48px 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+}
+
+.footer-logo {
+  font-size: 18px; font-weight: 800;
+  display: flex; align-items: center; gap: 8px;
+  letter-spacing: -.5px;
+}
+
+.footer-tagline {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text3);
+  letter-spacing: 1px; margin-top: 4px;
+}
+
+.footer-links {
+  display: flex; gap: 24px; list-style: none; flex-wrap: wrap;
+}
+
+.footer-links a {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text3);
+  text-decoration: none; letter-spacing: .5px;
+  transition: color .2s;
+}
+
+.footer-links a:hover { color: var(--text); }
+
+.footer-copy {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text3);
+  letter-spacing: .5px;
+}
+
+/* ════════════════════════════════════════
+   ANIMATIONS
+════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0; transform: translateY(32px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+
+.reveal.visible {
+  opacity: 1; transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: .1s; }
+.reveal-delay-2 { transition-delay: .2s; }
+.reveal-delay-3 { transition-delay: .3s; }
+.reveal-delay-4 { transition-delay: .4s; }
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 900px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .section { padding: 60px 24px; }
+  .dolor-grid { grid-template-columns: repeat(2,1fr); }
+  .tools-grid { grid-template-columns: 1fr; }
+  .sub-inner { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+  .arg-inner { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+  .pricing-cards { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
+  .pricing-section { padding: 60px 24px; }
+  .faq-section { padding: 60px 24px; }
+  footer { padding: 40px 24px; flex-direction: column; align-items: flex-start; }
+  .mini-app { grid-template-columns: 1fr; }
+  .mini-sidebar { display: none; }
+  .hero { padding: 120px 24px 60px; }
+  .divider-line { margin: 0 24px; }
+}
+
+@media (max-width: 600px) {
+  .dolor-grid { grid-template-columns: 1fr; }
+  h1 { letter-spacing: -1px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     NAV
+════════════════════════════════════════ -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="nav-dot"></div>
+    GLYPH
+  </a>
+  <ul class="nav-links">
+    <li><a href="#herramientas">Herramientas</a></li>
+    <li><a href="#precios">Precios</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="/app" class="nav-cta">Abrir app →</a></li>
+  </ul>
+</nav>
+
+<!-- ════════════════════════════════════
+     HERO
+════════════════════════════════════════ -->
+<section class="hero">
+
+  <div class="hero-badge">IA para producción gráfica</div>
+
+  <h1>
+    Prepará imágenes<br>
+    <span class="accent">listas para producir</span><br>
+    <span class="dim">en segundos.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Quitá fondos, mejorá calidad con IA, reescalá hasta 4× y convertí formatos desde un solo lugar. Diseñado para sublimadores y diseñadores.
+  </p>
+
+  <div class="hero-actions">
+    <a href="/app" class="btn-primary">
+      Probar GLYPH gratis →
+    </a>
+    <a href="#herramientas" class="btn-secondary">Ver funciones</a>
+  </div>
+
+  <div class="mp-badge">Pagá en pesos argentinos con Mercado Pago</div>
+
+  <!-- APP MOCKUP -->
+  <div class="hero-mockup">
+    <div class="mockup-glow"></div>
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="mockup-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="mockup-url">glyph.app · Designer Toolkit</div>
+      </div>
+      <div class="mockup-body">
+        <div class="mini-app">
+          <div class="mini-sidebar">
+            <div class="mini-logo">
+              <div class="mini-dot"></div>
+              GLYPH
+            </div>
+            <div class="mini-nav-item active">✂️ &nbsp;Remover fondo</div>
+            <div class="mini-nav-item">🔬 &nbsp;Upscaler IA</div>
+            <div class="mini-nav-item">🔄 &nbsp;Convertir</div>
+            <div class="mini-nav-item">👕 &nbsp;Mockups</div>
+          </div>
+          <div class="mini-main">
+            <div class="mini-upload">
+              <div class="mini-upload-icon">🖼️</div>
+              <div class="mini-upload-txt">Arrastrá tu imagen aquí</div>
+              <div class="mini-upload-sub">JPG · PNG · WEBP · MÁX 20MB</div>
+            </div>
+            <div class="mini-result-row">
+              <div class="mini-card">
+                <div class="mini-card-label">Original</div>
+                <div class="mini-img-placeholder">🖼️</div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-card-label">Sin fondo — IA</div>
+                <div class="mini-img-placeholder checker">✨</div>
+                <div class="mini-btn-row">
+                  <div class="mini-btn primary">⬇ Descargar</div>
+                  <div class="mini-btn ghost">↺ Nueva</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<div class="divider-line"></div>
+
+<!-- ════════════════════════════════════
+     DOLOR
+════════════════════════════════════════ -->
+<section class="dolor-section">
+  <div class="section reveal">
+    <div class="section-tag">El problema</div>
+    <h2>Dejá de perder tiempo<br><span class="accent">editando imágenes.</span></h2>
+    <p class="section-sub">Cada minuto que perdés en Photoshop es un minuto que no estás produciendo.</p>
+
+    <div class="dolor-grid">
+      <div class="dolor-card reveal reveal-delay-1">
+        <span class="dolor-icon">😤</span>
+        <div class="dolor-titulo">Fondos difíciles</div>
+        <div class="dolor-texto">Quitá fondos complejos sin pelearte con la varita mágica ni gastar horas en Photoshop.</div>
+      </div>
+      <div class="dolor-card reveal reveal-delay-2">
+        <span class="dolor-icon">🔍</span>
+        <div class="dolor-titulo">Imágenes pixeladas</div>
+        <div class="dolor-texto">Clientes que mandan fotos de 200px. Escalá 2× y 4× con IA sin perder calidad real.</div>
+      </div>
+      <div class="dolor-card reveal reveal-delay-3">
+        <span class="dolor-icon">🔄</span>
+        <div class="dolor-titulo">Formatos incompatibles</div>
+        <div class="dolor-texto">PNG, JPG, BMP, WEBP. Convertí cualquier formato en segundos, en lote.</div>
+      </div>
+      <div class="dolor-card reveal reveal-delay-4">
+        <span class="dolor-icon">⏱️</span>
+        <div class="dolor-titulo">Producción lenta</div>
+        <div class="dolor-texto">Más tiempo editando = menos trabajos terminados = menos plata. GLYPH cierra esa brecha.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
+<!-- ════════════════════════════════════
+     HERRAMIENTAS
+════════════════════════════════════════ -->
+<section id="herramientas">
+  <div class="section reveal">
+    <div class="section-tag">Las herramientas</div>
+    <h2>Todo lo que necesitás<br><span class="accent">para trabajar más rápido.</span></h2>
+
+    <div class="tools-grid">
+
+      <div class="tool-card reveal reveal-delay-1">
+        <div class="tool-icon-wrap">✂️</div>
+        <div class="tool-info">
+          <div class="tool-nombre">Remover fondo con IA</div>
+          <div class="tool-desc">Subí una imagen y obtené un PNG limpio con transparencia total. Sin seleccionar nada. Sin bordes feos. Listo para imprimir o diseñar.</div>
+          <span class="tool-tag">✓ PNG transparente</span>
+        </div>
+      </div>
+
+      <div class="tool-card reveal reveal-delay-2">
+        <div class="tool-icon-wrap">🔬</div>
+        <div class="tool-info">
+          <div class="tool-nombre">Upscaler IA 2× y 4×</div>
+          <div class="tool-desc">Mejorá imágenes pequeñas o de baja calidad antes de sublimar, estampar o imprimir. No es solo ampliar — la IA reconstruye el detalle.</div>
+          <span class="tool-tag">✓ Real-ESRGAN · ~1 segundo</span>
+        </div>
+      </div>
+
+      <div class="tool-card reveal reveal-delay-3">
+        <div class="tool-icon-wrap">🔄</div>
+        <div class="tool-info">
+          <div class="tool-nombre">Conversor de formatos</div>
+          <div class="tool-desc">PNG, JPG, WEBP, BMP, TIFF, ICO, AVIF. Con control de calidad. Convertí múltiples archivos a la vez sin instalar nada.</div>
+          <span class="tool-tag">✓ 9 formatos · sin límite</span>
+        </div>
+      </div>
+
+      <div class="tool-card reveal reveal-delay-4">
+        <div class="tool-icon-wrap">⚡</div>
+        <div class="tool-info">
+          <div class="tool-nombre">Flujo simple y directo</div>
+          <div class="tool-desc">Sin configuraciones raras. Sin curva de aprendizaje. Entrás, subís la imagen, descargás el resultado. Así de simple.</div>
+          <span class="tool-tag">✓ Cero instalación</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
+<!-- ════════════════════════════════════
+     SUBLIMADORES
+════════════════════════════════════════ -->
+<section class="sub-section">
+  <div class="sub-inner">
+    <div class="reveal">
+      <div class="section-tag">Tu industria</div>
+      <h2>Hecho para quienes<br><span class="accent">viven de producir.</span></h2>
+      <p style="font-size:17px;color:var(--text2);line-height:1.7;margin:20px 0 28px;max-width:460px;">
+        Si hacés tazas, remeras, DTF, sublimación o diseño gráfico, sabés cuánto tiempo se pierde limpiando imágenes o buscando archivos con mejor calidad.
+        <br><br>
+        GLYPH te ayuda a resolverlo rápido.<br>
+        <strong style="color:var(--text)">Más tiempo produciendo. Menos tiempo editando.</strong>
+      </p>
+      <a href="/app" class="btn-primary">Empezar ahora →</a>
+    </div>
+
+    <div class="sub-stats reveal reveal-delay-2">
+      <div class="stat-item">
+        <div class="stat-number">2×</div>
+        <div class="stat-label">más rápido que<br>hacer lo mismo en Photoshop</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">4×</div>
+        <div class="stat-label">escala máxima disponible<br>con IA real incluida</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">9</div>
+        <div class="stat-label">formatos de imagen<br>soportados para conversión</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     ARGENTINA
+════════════════════════════════════════ -->
+<section class="arg-section">
+  <div class="arg-inner">
+
+    <div class="reveal">
+      <div class="section-tag">100% Argentina</div>
+      <h2>Sin dólares.<br><span class="accent">Sin vueltas.</span></h2>
+      <p style="font-size:17px;color:var(--text2);line-height:1.7;margin:20px 0 28px;max-width:460px;">
+        Pagá tu suscripción en pesos argentinos usando Mercado Pago. Sin tarjetas internacionales. Sin impuestos sorpresa. Sin servicios imposibles de pagar.
+        <br><br>
+        Montos accesibles pensados para trabajar todos los días.
+      </p>
+    </div>
+
+    <div class="arg-visual reveal reveal-delay-2">
+      <div class="arg-flag-bar">
+        <div class="flag-stripe" style="background:#74b9ff;"></div>
+        <div class="flag-stripe" style="background:#fff;opacity:.3"></div>
+        <div class="flag-stripe" style="background:#74b9ff;"></div>
+      </div>
+
+      <div class="arg-payment-row">
+        <span class="arg-payment-icon">💳</span>
+        <span class="arg-payment-name">Tarjeta de débito / crédito</span>
+        <span class="arg-payment-check">✓</span>
+      </div>
+      <div class="arg-payment-row">
+        <span class="arg-payment-icon">📱</span>
+        <span class="arg-payment-name">Mercado Pago cuenta</span>
+        <span class="arg-payment-check">✓</span>
+      </div>
+      <div class="arg-payment-row">
+        <span class="arg-payment-icon">🏪</span>
+        <span class="arg-payment-name">Rapipago / Pago Fácil</span>
+        <span class="arg-payment-check">✓</span>
+      </div>
+
+      <div class="arg-price-highlight">
+        <div class="arg-price-label">Plan mensual desde</div>
+        <div class="arg-price-num"><sup>$</sup>2.000 <span>ARS / mes</span></div>
+        <div class="arg-price-sub">Sin renovación automática sorpresa</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
+<!-- ════════════════════════════════════
+     PRECIOS
+════════════════════════════════════════ -->
+<section id="precios">
+  <div class="pricing-section">
+    <div class="reveal">
+      <div class="section-tag" style="justify-content:center;">Precios</div>
+      <h2>Simple. Claro. <span class="accent">En pesos.</span></h2>
+      <p class="section-sub" style="margin:0 auto;text-align:center;">Elegí el plan que mejor se adapta a tu ritmo de trabajo.</p>
+    </div>
+
+    <div class="pricing-cards">
+
+      <!-- STARTER -->
+      <div class="pricing-card reveal reveal-delay-1">
+        <div class="pricing-plan">Starter</div>
+        <div class="pricing-price"><sup>$</sup>2.000</div>
+        <div class="pricing-period">ARS / mes</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>50 créditos por mes</li>
+          <li>Remover fondo con IA</li>
+          <li>Upscaler 2× y 4×</li>
+          <li>Conversor de formatos</li>
+          <li class="dim">Créditos extra</li>
+          <li class="dim">Acceso prioritario</li>
+        </ul>
+        <a href="/app" class="pricing-btn outline">Empezar →</a>
+      </div>
+
+      <!-- PRO (featured) -->
+      <div class="pricing-card featured reveal reveal-delay-2">
+        <div class="pricing-badge">Más elegido</div>
+        <div class="pricing-plan">Pro</div>
+        <div class="pricing-price"><sup>$</sup>6.000</div>
+        <div class="pricing-period">ARS / mes</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>200 créditos por mes</li>
+          <li>Remover fondo con IA</li>
+          <li>Upscaler 2× y 4×</li>
+          <li>Conversor de formatos</li>
+          <li>Créditos extra disponibles</li>
+          <li class="dim">Acceso prioritario</li>
+        </ul>
+        <a href="/app" class="pricing-btn filled">Empezar →</a>
+      </div>
+
+      <!-- STUDIO -->
+      <div class="pricing-card reveal reveal-delay-3">
+        <div class="pricing-plan">Studio</div>
+        <div class="pricing-price"><sup>$</sup>12.000</div>
+        <div class="pricing-period">ARS / mes</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>500 créditos por mes</li>
+          <li>Remover fondo con IA</li>
+          <li>Upscaler 2× y 4×</li>
+          <li>Conversor de formatos</li>
+          <li>Créditos extra disponibles</li>
+          <li>Acceso prioritario</li>
+        </ul>
+        <a href="/app" class="pricing-btn outline">Empezar →</a>
+      </div>
+
+    </div>
+
+    <p class="pricing-note reveal">
+      ¿Necesitás más créditos sin cambiar de plan? Próximamente disponibles paquetes de créditos adicionales.<br>
+      Todos los planes incluyen acceso completo a todas las herramientas.
+    </p>
+
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
+<!-- ════════════════════════════════════
+     FAQ
+════════════════════════════════════════ -->
+<section id="faq">
+  <div class="faq-section">
+    <div class="reveal" style="text-align:center;margin-bottom:48px;">
+      <div class="section-tag" style="justify-content:center;">FAQ</div>
+      <h2>Preguntas <span class="accent">frecuentes</span></h2>
+    </div>
+
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">
+        ¿Necesito saber diseño para usar GLYPH?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">No. GLYPH está pensado para ser simple desde el primer uso. Subís la imagen, elegís la herramienta y descargás el resultado. Sin tutoriales, sin configuraciones.</div>
+    </div>
+
+    <div class="faq-item reveal reveal-delay-1" onclick="toggleFaq(this)">
+      <div class="faq-q">
+        ¿Puedo pagar en Argentina?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">Sí, 100%. Los pagos se procesan con Mercado Pago en pesos argentinos. Podés usar tarjeta de débito, crédito, cuenta MP, Rapipago o Pago Fácil. Sin tarjetas internacionales.</div>
+    </div>
+
+    <div class="faq-item reveal reveal-delay-2" onclick="toggleFaq(this)">
+      <div class="faq-q">
+        ¿Sirve para sublimación y DTF?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">Sí, es ideal. Podés quitar fondos para dejar los diseños listos para imprimir, mejorar imágenes de baja resolución que mandan los clientes, y convertir formatos en segundos.</div>
+    </div>
+
+    <div class="faq-item reveal reveal-delay-3" onclick="toggleFaq(this)">
+      <div class="faq-q">
+        ¿Qué son los créditos?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">Cada operación de IA (remover fondo, upscaler) consume 2 créditos. La conversión de formatos es gratuita. Con el plan Starter tenés 50 créditos = 25 operaciones de IA por mes.</div>
+    </div>
+
+    <div class="faq-item reveal reveal-delay-4" onclick="toggleFaq(this)">
+      <div class="faq-q">
+        ¿Necesito instalar algo?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">No. GLYPH corre completamente en tu navegador. Solo necesitás internet. Compatible con Chrome, Firefox, Edge y Safari en Windows, Mac y Linux.</div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider-line"></div>
+
+<!-- ════════════════════════════════════
+     FOOTER
+════════════════════════════════════════ -->
+<footer>
+  <div>
+    <div class="footer-logo">
+      <div class="nav-dot"></div>
+      GLYPH
+    </div>
+    <div class="footer-tagline">Herramientas para sublimadores y diseñadores.</div>
+  </div>
+
+  <ul class="footer-links">
+    <li><a href="#herramientas">Herramientas</a></li>
+    <li><a href="#precios">Precios</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="/app">Abrir app</a></li>
+  </ul>
+
+  <div class="footer-copy">© 2025 GLYPH · Hecho en Argentina 🇦🇷</div>
+</footer>
+
+<script>
+// NAV SCROLL
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// REVEAL ON SCROLL
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+reveals.forEach(el => observer.observe(el));
+
+// FAQ
+function toggleFaq(item) {
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// SMOOTH SCROLL for nav links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
+
+</body>
+</html>
