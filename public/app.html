@@ -16,6 +16,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GLYPH — Designer Toolkit</title>
+<link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<link rel="shortcut icon" href="/assets/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="GLYPH" />
+<link rel="manifest" href="/site.webmanifest" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -785,6 +791,7 @@
   <div class="header-auth" id="headerAuth">
     <button class="login-btn" onclick="openAuth()">Iniciar sesión</button>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
 </header>
 
 <!-- PLANES MODAL -->
@@ -1151,24 +1158,61 @@ document.getElementById('mockupFileInput').addEventListener('change', e => { if 
 // ============================================================
 // SERVER HELPER — todas las llamadas van al servidor local
 // ============================================================
+let _fingerprint = null;
+
+// Inicializar fingerprint al cargar (va junto con initFirebase al final)
+async function initFingerprint() {
+  try {
+    const FP = await FingerprintJS.load();
+    const result = await FP.get();
+    _fingerprint = result.visitorId;
+    console.log('[FP] fingerprint listo:', _fingerprint.slice(0, 8) + '...');
+  } catch (err) {
+    console.warn('[FP] No se pudo obtener fingerprint:', err.message);
+    _fingerprint = 'unknown';
+  }
+}
+
 async function callServer(endpoint, file, extraFields = {}) {
-  if (!currentUser) {
-    openAuth();
+  const token = currentUser ? await currentUser.getIdToken(true) : null;
+
+  // Si no está logueado y no hay fingerprint todavía, esperamos
+  if (!token && !_fingerprint) {
     throw new Error('Iniciá sesión para usar esta función.');
   }
-  const token = await getAuthToken();
-  const form  = new FormData();
+
+  const form = new FormData();
   form.append('image', file);
   for (const [k, v] of Object.entries(extraFields)) form.append(k, String(v));
+
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (_fingerprint) headers['x-fingerprint'] = _fingerprint;
+
   const res = await fetch(SERVER + endpoint, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
+    headers,
     body: form
   });
+
   const data = await res.json().catch(() => ({ success: false, error: `Error ${res.status}` }));
+
+  // Si el servidor dice que se agotó el free trial
+  if (!data.success && data.error === 'free_limit_reached') {
+    showFreeTrialEnded();
+    throw new Error(data.message || 'Límite gratuito alcanzado.');
+  }
+
   if (!data.success) throw new Error(data.error || 'Error en el servidor');
-  // Actualizar créditos en el badge si vienen en la respuesta
+
+  // Actualizar créditos en el badge
   if (typeof data.credits === 'number') updateCreditsDisplay(data.credits);
+
+  // Si era free trial y funcionó, mostrar cartel de registro
+  if (data.freeUsed) {
+    showFreeTrialSuccess(data.message);
+  }
+
   return data.url;
 }
 
@@ -1800,6 +1844,52 @@ function downloadImage(imgId, filename) {
   a.download = filename;
   a.click();
 }
+function showFreeTrialEnded() {
+  // Muestra un toast con botón para ir al login
+  const el = document.getElementById('toast');
+  el.innerHTML = `
+    ⚡ Usaste tu prueba gratuita.
+    <a href="/login" style="color:var(--accent);margin-left:8px;text-decoration:underline;">
+      Creá una cuenta →
+    </a>`;
+  el.className = 'toast info show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 8000);
+}
+
+function showFreeTrialSuccess(message) {
+  // Banner que aparece debajo del resultado invitando a registrarse
+  let banner = document.getElementById('freeTrialBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'freeTrialBanner';
+    banner.style.cssText = `
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(200,241,53,0.1); border: 1px solid rgba(200,241,53,0.4);
+      border-radius: 12px; padding: 16px 24px; z-index: 1000;
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      color: var(--text); text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      max-width: 420px; width: 90%;
+    `;
+    document.body.appendChild(banner);
+  }
+  banner.innerHTML = `
+    <div style="margin-bottom:10px;font-size:14px;">✨ ${message || '¡Tu prueba gratuita funcionó!'}</div>
+    <div style="color:var(--text2);margin-bottom:14px;">Creá una cuenta y empezá con 10 créditos gratis.</div>
+    <a href="/login" style="
+      display:inline-block;padding:10px 24px;
+      background:var(--accent);color:#0a0a0b;
+      border-radius:8px;text-decoration:none;
+      font-weight:600;letter-spacing:1px;font-size:11px;
+    ">CREAR CUENTA GRATIS →</a>
+    <button onclick="this.parentElement.remove()" style="
+      margin-left:12px;background:none;border:none;
+      color:var(--text3);cursor:pointer;font-size:18px;vertical-align:middle;
+    ">✕</button>
+  `;
+  banner.style.display = 'block';
+}
 
 
 // ════════════════════════════════════════════════════════════════
@@ -1923,6 +2013,6 @@ function checkPaymentReturn() {
 }
 
 // ── INIT ──
-initFirebase().then(checkPaymentReturn);
+Promise.all([initFirebase(), initFingerprint()]).then(checkPaymentReturn);
 
 </script>
