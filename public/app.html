@@ -784,9 +784,7 @@
     <button class="nav-tab" onclick="switchTab('convert', this)">
       <span class="tab-icon">🔄</span> Conversor
     </button>
-    <button class="nav-tab" onclick="switchTab('mockup', this)">
-      <span class="tab-icon">👕</span> Mockups
-    </button>
+
   </nav>
   <div class="header-auth" id="headerAuth">
     <button class="login-btn" onclick="openAuth()">Iniciar sesión</button>
@@ -832,7 +830,7 @@
       ✂️ Remove BG <span>2 créditos</span> &nbsp;·&nbsp;
       🔬 Upscaler <span>2 créditos</span> &nbsp;·&nbsp;
       🔄 Conversor <span>gratis</span> &nbsp;·&nbsp;
-      👕 Mockups <span>1 crédito</span>
+
     </div>
   </div>
 </div>
@@ -1033,76 +1031,10 @@
   </div>
 </div>
 
-<!-- ===== TAB 4: MOCKUPS ===== -->
-<div class="tool-panel" id="panel-mockup">
-  <div class="panel-header">
-    <div class="panel-title">Generador de <span>mockups</span></div>
-    <div class="panel-desc">// ELEGÍ UN TIPO, SUBÍ TU DISEÑO Y DESCARGÁ EL MOCKUP LISTO</div>
-  </div>
 
-  <div class="mockup-grid">
-    <div class="mockup-item selected" onclick="selectMockup(this,'tshirt')"><div class="mockup-icon">👕</div><div class="mockup-name">Remera</div></div>
-    <div class="mockup-item" onclick="selectMockup(this,'hoodie')"><div class="mockup-icon">🧥</div><div class="mockup-name">Hoodie</div></div>
-    <div class="mockup-item" onclick="selectMockup(this,'mug')"><div class="mockup-icon">☕</div><div class="mockup-name">Taza</div></div>
-    <div class="mockup-item" onclick="selectMockup(this,'poster')"><div class="mockup-icon">🖼️</div><div class="mockup-name">Póster</div></div>
-    <div class="mockup-item" onclick="selectMockup(this,'tote')"><div class="mockup-icon">🛍️</div><div class="mockup-name">Tote bag</div></div>
-    <div class="mockup-item" onclick="selectMockup(this,'phone')"><div class="mockup-icon">📱</div><div class="mockup-name">Celular</div></div>
-    <div class="mockup-item" onclick="selectMockup(this,'notebook')"><div class="mockup-icon">📓</div><div class="mockup-name">Notebook</div></div>
-    <div class="mockup-item" onclick="selectMockup(this,'sticker')"><div class="mockup-icon">🏷️</div><div class="mockup-name">Sticker</div></div>
-  </div>
-
-  <div class="two-col">
-    <div>
-      <input type="file" id="mockupFileInput" accept="image/jpeg,image/png">
-      <div class="upload-zone" id="mockupUploadZone" onclick="document.getElementById('mockupFileInput').click()">
-        <div class="upload-icon">🎨</div>
-        <div class="upload-text">Subí tu diseño</div>
-        <div class="upload-sub">PNG RECOMENDADO · FONDO TRANSPARENTE</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="card">
-        <div class="card-label">Ajustes</div>
-        <div class="control-row" style="margin-top:12px;">
-          <span class="control-label">Color de prenda</span>
-          <input type="color" id="garmentColor" value="#ffffff" onchange="updateMockup()">
-        </div>
-        <div class="control-row">
-          <span class="control-label">Tamaño diseño</span>
-          <input type="range" id="designSize" min="20" max="80" value="45" oninput="updateMockup()">
-        </div>
-        <div class="control-row">
-          <span class="control-label">Posición vertical</span>
-          <input type="range" id="designY" min="20" max="70" value="40" oninput="updateMockup()">
-        </div>
-        <div class="control-row">
-          <span class="control-label">Opacidad diseño</span>
-          <input type="range" id="designOpacity" min="20" max="100" value="95" oninput="updateMockup()">
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-label">Preview — <span id="currentMockupLabel" style="color:var(--accent)">REMERA</span></div>
-      <div class="mockup-canvas-wrap">
-        <canvas id="mockupCanvas"></canvas>
-        <div class="mockup-placeholder" id="mockupPlaceholder">
-          <div class="big-icon">👕</div>
-          <div>Subí tu diseño para<br>generar el mockup</div>
-        </div>
-      </div>
-      <div class="actions-row" style="margin-top:16px;">
-        <button class="btn btn-primary" id="mockupDownloadBtn" onclick="downloadMockup()" disabled>⬇ Descargar mockup</button>
-        <button class="btn btn-ghost" onclick="resetTool('mockup')">↺ Limpiar</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 </main>
 
-<canvas id="tempCanvas" style="display:none"></canvas>
 
 <script>
 // ============================================================
@@ -1112,7 +1044,6 @@ let state = {
   bg:      { file: null, resultUrl: null },
   upscale: { file: null, scale: 2, resultUrl: null, startTime: null },
   convert: { files: [], format: 'image/jpeg', ext: 'jpg', quality: 90 },
-  mockup:  { type: 'tshirt', designImg: null }
 };
 
 // Server URL — el HTML se sirve desde el mismo servidor Node
@@ -1148,12 +1079,10 @@ function setupDrop(zoneId, handler) {
 setupDrop('bgUploadZone', files => { if (files[0]) handleBGFile(files[0]); });
 setupDrop('upscaleUploadZone', files => { if (files[0]) handleUpscaleFile(files[0]); });
 setupDrop('convertUploadZone', files => handleConvertFiles(files));
-setupDrop('mockupUploadZone', files => { if (files[0]) handleMockupFile(files[0]); });
 
 document.getElementById('bgFileInput').addEventListener('change', e => { if (e.target.files[0]) handleBGFile(e.target.files[0]); });
 document.getElementById('upscaleFileInput').addEventListener('change', e => { if (e.target.files[0]) handleUpscaleFile(e.target.files[0]); });
 document.getElementById('convertFileInput').addEventListener('change', e => handleConvertFiles(e.target.files));
-document.getElementById('mockupFileInput').addEventListener('change', e => { if (e.target.files[0]) handleMockupFile(e.target.files[0]); });
 
 // ============================================================
 // SERVER HELPER — todas las llamadas van al servidor local
@@ -1604,294 +1533,12 @@ function resetTool(tool) {
     document.getElementById('convertStatus').classList.remove('visible');
     document.getElementById('convertFileInput').value = '';
   }
-  if (tool === 'mockup') {
-    state.mockup.designImg = null;
-    document.getElementById('mockupCanvas').style.display = 'none';
-    document.getElementById('mockupPlaceholder').style.display = '';
-    document.getElementById('mockupDownloadBtn').disabled = true;
-    document.getElementById('mockupFileInput').value = '';
-  }
+
 }
 
 // ============================================================
 // MOCKUP GENERATOR
 // ============================================================
-const mockupLabels = {
-  tshirt: 'REMERA', hoodie: 'HOODIE', mug: 'TAZA',
-  poster: 'PÓSTER', tote: 'TOTE BAG', phone: 'CELULAR',
-  notebook: 'NOTEBOOK', sticker: 'STICKER'
-};
-
-function selectMockup(el, type) {
-  document.querySelectorAll('.mockup-item').forEach(i => i.classList.remove('selected'));
-  el.classList.add('selected');
-  state.mockup.type = type;
-  document.getElementById('currentMockupLabel').textContent = mockupLabels[type];
-  document.getElementById('mockupPlaceholder').querySelector('.big-icon').textContent = el.querySelector('.mockup-icon').textContent;
-  if (state.mockup.designImg) updateMockup();
-}
-
-function handleMockupFile(file) {
-  if (!file.type.match(/image\/(jpeg|png)/)) return alert('Solo JPG o PNG.');
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => { state.mockup.designImg = img; updateMockup(); };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function updateMockup() {
-  if (!state.mockup.designImg) return;
-  const canvas = document.getElementById('mockupCanvas');
-  const ctx = canvas.getContext('2d');
-  const W = 600, H = 600;
-  canvas.width = W; canvas.height = H;
-  canvas.style.display = 'block';
-  document.getElementById('mockupPlaceholder').style.display = 'none';
-  document.getElementById('mockupDownloadBtn').disabled = false;
-
-  const color = document.getElementById('garmentColor').value;
-  const sizePercent = parseInt(document.getElementById('designSize').value) / 100;
-  const yPercent = parseInt(document.getElementById('designY').value) / 100;
-  const opacity = parseInt(document.getElementById('designOpacity').value) / 100;
-
-  ctx.clearRect(0, 0, W, H);
-  drawMockupShape(ctx, state.mockup.type, color, W, H);
-
-  ctx.save();
-  ctx.globalAlpha = opacity;
-  const area = getMockupDesignArea(state.mockup.type, W, H);
-  const dW = area.w * sizePercent;
-  const dH = (state.mockup.designImg.height / state.mockup.designImg.width) * dW;
-  const dX = area.cx - dW / 2;
-  const dY = area.y + (area.h * (yPercent - 0.2));
-  ctx.shadowColor = 'rgba(0,0,0,0.2)';
-  ctx.shadowBlur = 8;
-  ctx.drawImage(state.mockup.designImg, dX, dY, dW, dH);
-  ctx.restore();
-}
-
-function getMockupDesignArea(type, W, H) {
-  const areas = {
-    tshirt:   { cx: W*0.5, y: H*0.25, w: W*0.6, h: H*0.4 },
-    hoodie:   { cx: W*0.5, y: H*0.28, w: W*0.5, h: H*0.35 },
-    mug:      { cx: W*0.52, y: H*0.3, w: W*0.45, h: H*0.4 },
-    poster:   { cx: W*0.5, y: H*0.1, w: W*0.75, h: H*0.8 },
-    tote:     { cx: W*0.5, y: H*0.3, w: W*0.5, h: H*0.45 },
-    phone:    { cx: W*0.5, y: H*0.2, w: W*0.38, h: H*0.6 },
-    notebook: { cx: W*0.5, y: H*0.15, w: W*0.55, h: H*0.65 },
-    sticker:  { cx: W*0.5, y: H*0.15, w: W*0.65, h: H*0.65 }
-  };
-  return areas[type] || areas.tshirt;
-}
-
-function drawMockupShape(ctx, type, color, W, H) {
-  ctx.fillStyle = '#1a1a22';
-  ctx.fillRect(0, 0, W, H);
-  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.7);
-  grad.addColorStop(0, 'rgba(255,255,255,0.04)');
-  grad.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  const drawFn = { tshirt: drawTShirt, hoodie: drawHoodie, mug: drawMug, poster: drawPoster, tote: drawToteBag, phone: drawPhone, notebook: drawNotebook, sticker: drawSticker };
-  if (drawFn[type]) drawFn[type](ctx, W, H, color);
-}
-
-function downloadMockup() {
-  const canvas = document.getElementById('mockupCanvas');
-  canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `mockup-${state.mockup.type}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, 'image/png');
-}
-
-// ============================================================
-// MOCKUP SHAPES
-// ============================================================
-function drawTShirt(ctx, W, H, color) {
-  ctx.save();
-  ctx.fillStyle = color;
-  ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(W*0.1, H*0.18); ctx.lineTo(W*0.04, H*0.38); ctx.lineTo(W*0.25, H*0.42); ctx.lineTo(W*0.28, H*0.32);
-  ctx.lineTo(W*0.22, H*0.32); ctx.lineTo(W*0.18, H*0.82); ctx.lineTo(W*0.82, H*0.82); ctx.lineTo(W*0.78, H*0.32);
-  ctx.lineTo(W*0.72, H*0.32); ctx.lineTo(W*0.75, H*0.42); ctx.lineTo(W*0.96, H*0.38); ctx.lineTo(W*0.9, H*0.18);
-  ctx.lineTo(W*0.64, H*0.22); ctx.quadraticCurveTo(W*0.5, H*0.30, W*0.36, H*0.22);
-  ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(W*0.36, H*0.22); ctx.quadraticCurveTo(W*0.5, H*0.32, W*0.64, H*0.22);
-  ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1; ctx.stroke();
-  ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.beginPath();
-  ctx.moveTo(W*0.5, H*0.3); ctx.lineTo(W*0.44, H*0.82); ctx.lineTo(W*0.56, H*0.82); ctx.closePath(); ctx.fill();
-  ctx.restore();
-}
-
-function drawHoodie(ctx, W, H, color) {
-  ctx.save();
-  ctx.fillStyle = color; ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(W*0.08, H*0.2); ctx.lineTo(W*0.02, H*0.45); ctx.lineTo(W*0.22, H*0.48); ctx.lineTo(W*0.25, H*0.35);
-  ctx.lineTo(W*0.18, H*0.34); ctx.lineTo(W*0.16, H*0.84); ctx.lineTo(W*0.84, H*0.84); ctx.lineTo(W*0.82, H*0.34);
-  ctx.lineTo(W*0.75, H*0.35); ctx.lineTo(W*0.78, H*0.48); ctx.lineTo(W*0.98, H*0.45); ctx.lineTo(W*0.92, H*0.2);
-  ctx.lineTo(W*0.68, H*0.17); ctx.quadraticCurveTo(W*0.62, H*0.08, W*0.5, H*0.06);
-  ctx.quadraticCurveTo(W*0.38, H*0.08, W*0.32, H*0.17); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(W*0.38, H*0.22); ctx.quadraticCurveTo(W*0.5, H*0.35, W*0.62, H*0.22);
-  ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.fillStyle = 'rgba(0,0,0,0.07)'; ctx.beginPath();
-  ctx.roundRect(W*0.3, H*0.62, W*0.4, H*0.14, 4); ctx.fill();
-  ctx.restore();
-}
-
-function drawMug(ctx, W, H, color) {
-  ctx.save();
-  ctx.fillStyle = color; ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(W*0.2, H*0.22); ctx.lineTo(W*0.28, H*0.82);
-  ctx.quadraticCurveTo(W*0.5, H*0.87, W*0.72, H*0.82); ctx.lineTo(W*0.8, H*0.22);
-  ctx.quadraticCurveTo(W*0.5, H*0.17, W*0.2, H*0.22); ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(W*0.76, H*0.38);
-  ctx.quadraticCurveTo(W*0.94, H*0.38, W*0.94, H*0.52);
-  ctx.quadraticCurveTo(W*0.94, H*0.65, W*0.76, H*0.65);
-  ctx.strokeStyle = color; ctx.lineWidth = 14; ctx.stroke();
-  ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.beginPath(); ctx.ellipse(W*0.5, H*0.22, W*0.3, H*0.04, 0, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1; ctx.stroke();
-  ctx.restore();
-}
-
-function drawPoster(ctx, W, H, color) {
-  ctx.save();
-  const margin = W*0.1;
-  ctx.fillStyle = color; ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 20;
-  ctx.shadowOffsetX = 6; ctx.shadowOffsetY = 6;
-  ctx.roundRect(margin, H*0.06, W-margin*2, H*0.88, 4); ctx.fill(); ctx.restore();
-  ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1;
-  ctx.roundRect(W*0.1, H*0.06, W*0.8, H*0.88, 4); ctx.stroke(); ctx.restore();
-}
-
-function drawToteBag(ctx, W, H, color) {
-  ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1.5;
-  [{ m: W*0.33, M: W*0.43 }, { m: W*0.57, M: W*0.67 }].forEach(({m, M}) => {
-    ctx.beginPath(); ctx.moveTo(m, H*0.22);
-    ctx.quadraticCurveTo(m-W*0.03, H*0.08, m+W*0.05, H*0.08);
-    ctx.quadraticCurveTo(M-W*0.05, H*0.08, M, H*0.22);
-    ctx.strokeStyle = color; ctx.lineWidth = 10; ctx.stroke();
-    ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1.5; ctx.stroke();
-  });
-  ctx.fillStyle = color; ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(W*0.15, H*0.22); ctx.lineTo(W*0.12, H*0.82);
-  ctx.quadraticCurveTo(W*0.5, H*0.88, W*0.88, H*0.82); ctx.lineTo(W*0.85, H*0.22);
-  ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
-}
-
-function drawPhone(ctx, W, H, color) {
-  ctx.save();
-  const px=W*0.28, py=H*0.08, pw=W*0.44, ph=H*0.84;
-  ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 18;
-  ctx.shadowOffsetX = 4; ctx.shadowOffsetY = 4;
-  ctx.fillStyle = '#1a1a1a'; ctx.roundRect(px, py, pw, ph, 30); ctx.fill(); ctx.restore();
-  ctx.save(); ctx.fillStyle = color; ctx.roundRect(px+6, py+12, pw-12, ph-24, 24); ctx.fill();
-  ctx.fillStyle = '#1a1a1a'; ctx.roundRect(W*0.42, py+14, W*0.16, H*0.035, 8); ctx.fill();
-  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.roundRect(W*0.42, py+ph-28, W*0.16, 4, 2); ctx.fill();
-  ctx.restore();
-}
-
-function drawNotebook(ctx, W, H, color) {
-  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 16;
-  ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 5;
-  ctx.fillStyle = adjustColor(color, -30); ctx.roundRect(W*0.14, H*0.08, W*0.08, H*0.84, [6,0,0,6]); ctx.fill();
-  ctx.fillStyle = color; ctx.roundRect(W*0.2, H*0.08, W*0.64, H*0.84, [0,6,6,0]); ctx.fill(); ctx.restore();
-  ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1;
-  for (let i = 0; i < 8; i++) {
-    const y = H*(0.28 + i*0.072);
-    ctx.beginPath(); ctx.moveTo(W*0.28, y); ctx.lineTo(W*0.78, y); ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawSticker(ctx, W, H, color) {
-  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12;
-  ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 3;
-  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(W*0.1, H*0.1, W*0.8, H*0.8, 20); ctx.fill();
-  ctx.fillStyle = color; ctx.beginPath(); ctx.roundRect(W*0.14, H*0.14, W*0.72, H*0.72, 15); ctx.fill();
-  ctx.restore();
-}
-
-function adjustColor(hex, amount) {
-  const num = parseInt(hex.slice(1), 16);
-  const r = Math.max(0, Math.min(255, (num >> 16) + amount));
-  const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + amount));
-  const b = Math.max(0, Math.min(255, (num & 0xff) + amount));
-  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
-}
-
-// ============================================================
-// GENERIC DOWNLOAD
-// ============================================================
-function downloadImage(imgId, filename) {
-  const img = document.getElementById(imgId);
-  if (!img.src) return;
-  const a = document.createElement('a');
-  a.href = img.src;
-  a.download = filename;
-  a.click();
-}
-function showFreeTrialEnded() {
-  // Muestra un toast con botón para ir al login
-  const el = document.getElementById('toast');
-  el.innerHTML = `
-    ⚡ Usaste tu prueba gratuita.
-    <a href="/login" style="color:var(--accent);margin-left:8px;text-decoration:underline;">
-      Creá una cuenta →
-    </a>`;
-  el.className = 'toast info show';
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 8000);
-}
-
-function showFreeTrialSuccess(message) {
-  // Banner que aparece debajo del resultado invitando a registrarse
-  let banner = document.getElementById('freeTrialBanner');
-  if (!banner) {
-    banner = document.createElement('div');
-    banner.id = 'freeTrialBanner';
-    banner.style.cssText = `
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: rgba(200,241,53,0.1); border: 1px solid rgba(200,241,53,0.4);
-      border-radius: 12px; padding: 16px 24px; z-index: 1000;
-      font-family: 'DM Mono', monospace; font-size: 12px;
-      color: var(--text); text-align: center;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      max-width: 420px; width: 90%;
-    `;
-    document.body.appendChild(banner);
-  }
-  banner.innerHTML = `
-    <div style="margin-bottom:10px;font-size:14px;">✨ ${message || '¡Tu prueba gratuita funcionó!'}</div>
-    <div style="color:var(--text2);margin-bottom:14px;">Creá una cuenta y empezá con 10 créditos gratis.</div>
-    <a href="/login" style="
-      display:inline-block;padding:10px 24px;
-      background:var(--accent);color:#0a0a0b;
-      border-radius:8px;text-decoration:none;
-      font-weight:600;letter-spacing:1px;font-size:11px;
-    ">CREAR CUENTA GRATIS →</a>
-    <button onclick="this.parentElement.remove()" style="
-      margin-left:12px;background:none;border:none;
-      color:var(--text3);cursor:pointer;font-size:18px;vertical-align:middle;
-    ">✕</button>
-  `;
-  banner.style.display = 'block';
-}
-
-
 // ════════════════════════════════════════════════════════════════
 // FIREBASE AUTH
 // ════════════════════════════════════════════════════════════════
