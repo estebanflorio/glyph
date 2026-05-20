@@ -1,10 +1,3 @@
-// server.js — GLYPH v4.0
-// Cambios vs v3:
-//  · Rutas /api/remove-bg y /api/upscale aceptan usuarios anónimos (1 operación gratis)
-//  · Middleware freeLimit protege con IP + fingerprint
-//  · Webhook MP mejorado con retry-safe (idempotencia por paymentId)
-//  · PUBLIC_URL actualizado para producción
-
 import 'dotenv/config';
 import express from 'express';
 import Replicate from 'replicate';
@@ -42,8 +35,40 @@ const mpPayment    = new Payment(mp);
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
 // ─── MIDDLEWARE ───────────────────────────────────────────────
+
+// ─── FIREBASE CONFIG (enviada al frontend) ────────────────────
+app.get('/api/firebase-config', (req, res) => {
+  res.json({
+    apiKey:     process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId:  process.env.FIREBASE_PROJECT_ID,
+    appId:      process.env.FIREBASE_APP_ID,
+  });
+});
+
 app.use(express.json());
+
+// Evita la pantalla de advertencia de ngrok en desarrollo
+app.use((req, res, next) => {
+  res.setHeader('ngrok-skip-browser-warning', 'true');
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
+// ─── RUTAS DE PÁGINAS ─────────────────────────────────────────
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/app', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'app.html'));
+});
+
+app.get('/site.webmanifest', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'assets', 'site.webmanifest'));
+});
+
+
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -56,35 +81,7 @@ const toDataUri = (buf, mime) =>
 // Costo en créditos por operación
 const COSTS = { 'remove-bg': 2, 'upscale': 2 };
 
-// ─── FIREBASE CONFIG (enviada al frontend) ────────────────────
-app.get('/api/firebase-config', (req, res) => {
-  res.json({
-    apiKey:     process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    projectId:  process.env.FIREBASE_PROJECT_ID,
-    appId:      process.env.FIREBASE_APP_ID,
-  });
-});
-
-// Rutas de páginas
-app.get('/',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/login',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-app.get('/app',    (req, res) => res.sendFile(path.join(__dirname, 'public', 'app.html')));
-
 // ─── AUTH MIDDLEWARE ──────────────────────────────────────────
-// optionalAuth: deja pasar siempre, pero setea req.user si hay token válido
-async function optionalAuth(req, res, next) {
-  const token = req.headers.authorization?.split('Bearer ')[1];
-  if (!token) { req.user = null; return next(); }
-  try {
-    req.user = await auth.verifyIdToken(token);
-  } catch {
-    req.user = null;
-  }
-  next();
-}
-
-// requireAuth: rechaza si no hay token
 async function requireAuth(req, res, next) {
   const token = req.headers.authorization?.split('Bearer ')[1];
   if (!token) return res.status(401).json({ success: false, error: 'No autenticado.' });
@@ -96,8 +93,22 @@ async function requireAuth(req, res, next) {
   }
 }
 
+// Middleware combinado: usuario logueado usa créditos, invitado usa freeLimit
+async function authOrFree(req, res, next) {
+  const token = req.headers.authorization?.split('Bearer ')[1];
+  if (token) {
+    try {
+      req.user = await auth.verifyIdToken(token);
+      return next(); // usuario autenticado, sigue al requireCredits
+    } catch {
+      return res.status(401).json({ success: false, error: 'Token inválido.' });
+    }
+  }
+  // Sin token → aplicar freeLimit
+  return freeLimit(req, res, next);
+}
+
 // ─── CREDITS MIDDLEWARE ───────────────────────────────────────
-// Solo se llama cuando req.user existe (usuario logueado)
 function requireCredits(operation) {
   return async (req, res, next) => {
     const cost = COSTS[operation];
@@ -109,7 +120,18 @@ function requireCredits(operation) {
       snap = await ref.get();
     }
 
-    const credits = snap.data().credits ?? 0;
+    const data = snap.data();
+
+    // ── Admin: créditos ilimitados, no se descuenta nada ──
+    if (data.isAdmin === true) {
+      console.log(`[admin] ${req.user.email} — sin descuento de créditos`);
+      req.creditsAfter = 999999;
+      req.creditsCost  = 0;
+      req.isAdmin      = true;
+      return next();
+    }
+
+    const credits = data.credits ?? 0;
     if (credits < cost) {
       return res.status(402).json({
         success: false,
@@ -125,22 +147,6 @@ function requireCredits(operation) {
   };
 }
 
-// ─── MIDDLEWARE COMBINADO: logueado + créditos ó anónimo + freeLimit ──
-function authOrFree(operation) {
-  return [
-    optionalAuth,
-    async (req, res, next) => {
-      if (req.user) {
-        // Usuario logueado → verificar créditos
-        return requireCredits(operation)(req, res, next);
-      } else {
-        // Anónimo → verificar freeLimit (IP + fingerprint)
-        return freeLimit(req, res, next);
-      }
-    }
-  ];
-}
-
 // ════════════════════════════════════════════════════════════════
 // RUTAS DE USUARIO
 // ════════════════════════════════════════════════════════════════
@@ -151,16 +157,23 @@ app.get('/api/me', requireAuth, async (req, res) => {
     await ref.set({ email: req.user.email, credits: 10, createdAt: FieldValue.serverTimestamp() });
     snap = await ref.get();
   }
-  res.json({ success: true, uid: req.user.uid, email: req.user.email, credits: snap.data().credits ?? 0 });
+  const d = snap.data();
+  res.json({
+    success:  true,
+    uid:      req.user.uid,
+    email:    req.user.email,
+    credits:  d.isAdmin ? 999999 : (d.credits ?? 0),
+    isAdmin:  d.isAdmin ?? false,
+  });
 });
 
 // ════════════════════════════════════════════════════════════════
 // RUTAS MERCADOPAGO
 // ════════════════════════════════════════════════════════════════
 const PLANES = {
-  starter: { credits: 50,  price: 2000,  label: 'Starter — 50 créditos'  },
-  pro:     { credits: 200, price: 6000,  label: 'Pro — 200 créditos'     },
-  studio:  { credits: 500, price: 12000, label: 'Studio — 500 créditos'  },
+  starter: { credits: 50,  price: 2000,  label: 'Starter — 50 créditos'   },
+  pro:     { credits: 200, price: 6000,  label: 'Pro — 200 créditos'      },
+  studio:  { credits: 500, price: 12000, label: 'Studio — 500 créditos'   },
 };
 
 app.post('/api/crear-preferencia', requireAuth, async (req, res) => {
@@ -199,131 +212,129 @@ app.post('/api/crear-preferencia', requireAuth, async (req, res) => {
   }
 });
 
-// ─── WEBHOOK MP ───────────────────────────────────────────────
-// Idempotente: verifica si el paymentId ya fue procesado
 app.post('/api/webhook-mp', async (req, res) => {
-  res.sendStatus(200); // Siempre respondemos 200 primero
-
+  res.sendStatus(200);
   try {
     const { type, data } = req.body;
     if (type !== 'payment') return;
 
-    const paymentId = String(data.id);
-
-    // Idempotencia: si ya procesamos este pago, lo ignoramos
-    const txRef  = db.collection('transactions').doc(paymentId);
-    const txSnap = await txRef.get();
-    if (txSnap.exists) {
-      console.log(`[MP] ⚠ Pago ${paymentId} ya procesado — ignorando`);
-      return;
-    }
-
-    const payment = await mpPayment.get({ id: paymentId });
+    const payment = await mpPayment.get({ id: data.id });
     if (payment.status !== 'approved') return;
 
     const { uid, plan, credits } = payment.metadata;
-    if (!uid || !credits) {
-      console.error('[MP] Metadata incompleta:', payment.metadata);
-      return;
-    }
+    if (!uid || !credits) return;
 
-    // Acreditar créditos y registrar transacción en una sola operación
-    const batch = db.batch();
-    batch.update(db.collection('users').doc(uid), {
-      credits: FieldValue.increment(Number(credits))
-    });
-    batch.set(txRef, {
-      uid,
-      plan,
-      credits:   Number(credits),
-      amount:    payment.transaction_amount,
-      paymentId,
-      status:    'approved',
+    await db.collection('users').doc(uid).update({ credits: FieldValue.increment(Number(credits)) });
+    await db.collection('transactions').add({
+      uid, plan, credits: Number(credits),
+      amount: payment.transaction_amount,
+      paymentId: String(payment.id),
       createdAt: FieldValue.serverTimestamp(),
     });
-    await batch.commit();
-
     console.log(`[MP] ✓ Pago aprobado — ${uid} · plan:${plan} · +${credits} créditos`);
   } catch (err) {
-    console.error('[MP] webhook error:', err.message);
+    console.error('[MP] webhook:', err.message);
   }
 });
 
 // ════════════════════════════════════════════════════════════════
-// RUTAS REPLICATE — auth opcional: logueado usa créditos, anónimo usa free trial
+// RUTAS REPLICATE (requieren auth + créditos)
 // ════════════════════════════════════════════════════════════════
+app.post('/api/remove-bg', authOrFree, upload.single('image'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, error: 'No se recibió ninguna imagen.' });
 
-app.post('/api/remove-bg',
-  ...authOrFree('remove-bg'),
-  upload.single('image'),
-  async (req, res) => {
-    if (!req.file) return res.status(400).json({ success: false, error: 'No se recibió ninguna imagen.' });
+  const isGuest = !req.user;
+  console.log(`[remove-bg] ${isGuest ? 'invitado' : req.user.email} · ${req.file.originalname} · ${(req.file.size/1024).toFixed(0)} KB`);
 
-    const who = req.user ? req.user.email : `anon[${req.headers['x-fingerprint']?.slice(0,8)}]`;
-    console.log(`[remove-bg] ${who} · ${req.file.originalname} · ${(req.file.size/1024).toFixed(0)} KB`);
+  // Descontar créditos si está logueado
+  let creditsAfter = null;
+  if (!isGuest) {
+    const cost = COSTS['remove-bg'];
+    const ref  = db.collection('users').doc(req.user.uid);
+    const snap = await ref.get();
+    const data = snap.data() || {};
 
-    try {
-      const output = await replicate.run(
-        '851-labs/background-remover:a029dff38972b5fda4ec5d75d7d1cd25aeff621d2cf4946a41055d7db66b80bc',
-        { input: { image: toDataUri(req.file.buffer, req.file.mimetype) } }
-      );
-      const url = Array.isArray(output) ? output[0] : String(output);
-
-      const response = { success: true, url };
-      if (req.user) {
-        response.credits = req.creditsAfter;
-        console.log(`[remove-bg] ✓ créditos restantes: ${req.creditsAfter}`);
-      } else {
-        response.freeUsed = true;
-        response.message  = '¡Listo! Creá una cuenta para seguir usando GLYPH.';
-      }
-      res.json(response);
-    } catch (err) {
-      // Devolver créditos si falló (solo usuarios logueados)
-      if (req.user) {
-        await db.collection('users').doc(req.user.uid).update({ credits: FieldValue.increment(req.creditsCost) });
-      }
-      console.error('[remove-bg] ✗', err.message);
-      res.status(500).json({ success: false, error: err.message });
+    if (data.isAdmin) {
+      creditsAfter = 999999;
+    } else {
+      const credits = data.credits ?? 0;
+      if (credits < cost) return res.status(402).json({ success: false, error: `Créditos insuficientes. Necesitás ${cost}, tenés ${credits}.`, credits });
+      await ref.update({ credits: FieldValue.increment(-cost) });
+      creditsAfter = credits - cost;
     }
   }
-);
 
-app.post('/api/upscale',
-  ...authOrFree('upscale'),
-  upload.single('image'),
-  async (req, res) => {
-    if (!req.file) return res.status(400).json({ success: false, error: 'No se recibió ninguna imagen.' });
+  try {
+    const output = await replicate.run(
+      '851-labs/background-remover:a029dff38972b5fda4ec5d75d7d1cd25aeff621d2cf4946a41055d7db66b80bc',
+      { input: { image: toDataUri(req.file.buffer, req.file.mimetype) } }
+    );
+    const url = Array.isArray(output) ? output[0] : String(output);
+    console.log(`[remove-bg] ✓`);
+    res.json({
+      success:  true,
+      url,
+      credits:  creditsAfter,
+      freeUsed: isGuest,
+      message:  isGuest ? '¡Funcionó! Creá una cuenta y empezá con 10 créditos gratis.' : undefined
+    });
+  } catch (err) {
+    // Reintegrar créditos si falla
+    if (!isGuest && req.user) {
+      await db.collection('users').doc(req.user.uid).update({ credits: FieldValue.increment(COSTS['remove-bg']) });
+    }
+    console.error('[remove-bg] ✗', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
-    const scale = Math.min(8, Math.max(2, parseInt(req.body.scale) || 2));
-    const who   = req.user ? req.user.email : `anon[${req.headers['x-fingerprint']?.slice(0,8)}]`;
-    console.log(`[upscale] ${who} · ${req.file.originalname} · ${scale}×`);
+app.post('/api/upscale', authOrFree, upload.single('image'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, error: 'No se recibió ninguna imagen.' });
 
-    try {
-      const output = await replicate.run(
-        'prunaai/p-image-upscale',
-        { input: { image: toDataUri(req.file.buffer, req.file.mimetype), mode: 'factor', scale_factor: scale, enhance_realism: true } }
-      );
-      const url = Array.isArray(output) ? output[0] : String(output);
+  const scale   = Math.min(8, Math.max(2, parseInt(req.body.scale) || 2));
+  const isGuest = !req.user;
+  console.log(`[upscale] ${isGuest ? 'invitado' : req.user.email} · ${req.file.originalname} · ${scale}×`);
 
-      const response = { success: true, url };
-      if (req.user) {
-        response.credits = req.creditsAfter;
-        console.log(`[upscale] ✓ créditos restantes: ${req.creditsAfter}`);
-      } else {
-        response.freeUsed = true;
-        response.message  = '¡Listo! Creá una cuenta para seguir usando GLYPH.';
-      }
-      res.json(response);
-    } catch (err) {
-      if (req.user) {
-        await db.collection('users').doc(req.user.uid).update({ credits: FieldValue.increment(req.creditsCost) });
-      }
-      console.error('[upscale] ✗', err.message);
-      res.status(500).json({ success: false, error: err.message });
+  // Descontar créditos si está logueado
+  let creditsAfter = null;
+  if (!isGuest) {
+    const cost = COSTS['upscale'];
+    const ref  = db.collection('users').doc(req.user.uid);
+    const snap = await ref.get();
+    const data = snap.data() || {};
+
+    if (data.isAdmin) {
+      creditsAfter = 999999;
+    } else {
+      const credits = data.credits ?? 0;
+      if (credits < cost) return res.status(402).json({ success: false, error: `Créditos insuficientes. Necesitás ${cost}, tenés ${credits}.`, credits });
+      await ref.update({ credits: FieldValue.increment(-cost) });
+      creditsAfter = credits - cost;
     }
   }
-);
+
+  try {
+    const output = await replicate.run(
+      'prunaai/p-image-upscale',
+      { input: { image: toDataUri(req.file.buffer, req.file.mimetype), mode: 'factor', scale_factor: scale, enhance_realism: true } }
+    );
+    const url = Array.isArray(output) ? output[0] : String(output);
+    console.log(`[upscale] ✓`);
+    res.json({
+      success:  true,
+      url,
+      credits:  creditsAfter,
+      freeUsed: isGuest,
+      message:  isGuest ? '¡Funcionó! Creá una cuenta y empezá con 10 créditos gratis.' : undefined
+    });
+  } catch (err) {
+    if (!isGuest && req.user) {
+      await db.collection('users').doc(req.user.uid).update({ credits: FieldValue.increment(COSTS['upscale']) });
+    }
+    console.error('[upscale] ✗', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 app.listen(port, () => {
   console.log(`
@@ -334,7 +345,6 @@ app.listen(port, () => {
   ╚██████╔╝███████╗██║   ██║     ██║  ██║
    ╚═════╝ ╚══════╝╚═╝   ╚═╝     ╚═╝  ╚═╝
 
-  http://localhost:${port}  ·  v4.0
-  Auth Firebase · Créditos Firestore · Pagos MP · Free Trial IP+FP
+  http://localhost:${port}  ·  Auth Firebase  ·  Créditos Firestore  ·  Pagos MP
   `);
 });
