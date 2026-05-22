@@ -70,6 +70,8 @@ section, nav, footer { position: relative; z-index: 1; }
 /* ════════════════════════════════════════
    NAV
 ════════════════════════════════════════ */
+.nav-mobile-btn { display: none; }
+
 nav {
   position: fixed; top: 0; left: 0; right: 0;
   z-index: 100;
@@ -969,6 +971,14 @@ footer {
 @media (max-width: 900px) {
   nav { padding: 16px 24px; }
   .nav-links { display: none; }
+  .nav-mobile-btn {
+    display: inline-flex; align-items: center;
+    padding: 9px 18px;
+    background: var(--accent); color: #0a0a0b;
+    border-radius: 8px; font-family: 'DM Mono', monospace;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px;
+    text-decoration: none; transition: all .2s;
+  }
   .section { padding: 60px 24px; }
   .dolor-grid { grid-template-columns: repeat(2,1fr); }
   .tools-grid { grid-template-columns: 1fr; }
@@ -1006,6 +1016,7 @@ footer {
     <li><a href="#faq">FAQ</a></li>
     <li><a href="/login" class="nav-cta">Abrir app →</a></li>
   </ul>
+  <a href="/login" class="nav-mobile-btn">Iniciar sesión →</a>
 </nav>
 
 <!-- ════════════════════════════════════

@@ -188,6 +188,10 @@ app.get('/app', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'app.html'));
 });
 
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 app.get('/site.webmanifest', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'assets', 'site.webmanifest'));
 });
@@ -259,6 +263,11 @@ async function authOrFree(req, res, next) {
   if (token) {
     try {
       req.user = await auth.verifyIdToken(token);
+      // Verificar si el usuario está bloqueado
+      const snap = await db.collection('users').doc(req.user.uid).get();
+      if (snap.exists && snap.data().blocked) {
+        return res.status(403).json({ success: false, error: 'Tu cuenta está suspendida. Contactá al soporte.' });
+      }
       return next();
     } catch {
       return res.status(401).json({ success: false, error: 'Token inválido.' });
@@ -460,6 +469,172 @@ app.use((err, req, res, next) => {
   }
   console.error('[error]', err.message);
   res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+});
+
+
+// ─── ADMIN MIDDLEWARE ─────────────────────────────────────────
+async function requireAdmin(req, res, next) {
+  const token = req.headers.authorization?.split('Bearer ')[1];
+  if (!token) return res.status(401).json({ success: false, error: 'No autenticado.' });
+  try {
+    const decoded = await auth.verifyIdToken(token);
+    const snap = await db.collection('users').doc(decoded.uid).get();
+    if (!snap.exists || !snap.data().isAdmin) {
+      return res.status(403).json({ success: false, error: 'Acceso denegado.' });
+    }
+    req.user = decoded;
+    next();
+  } catch {
+    res.status(401).json({ success: false, error: 'Token inválido.' });
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// RUTAS DE ADMIN
+// ════════════════════════════════════════════════════════════════
+
+// GET /api/admin/stats — dashboard general
+app.get('/api/admin/stats', requireAdmin, async (req, res) => {
+  try {
+    const [usersSnap, txSnap] = await Promise.all([
+      db.collection('users').get(),
+      db.collection('transactions').orderBy('createdAt', 'desc').limit(5).get(),
+    ]);
+
+    const users  = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    const txs    = txSnap.docs.map(d => d.data());
+
+    const totalCredits  = users.filter(u => !u.isAdmin).reduce((a, u) => a + (u.credits || 0), 0);
+    const totalRevenue  = await db.collection('transactions').get()
+      .then(s => s.docs.reduce((a, d) => a + (d.data().amount || 0), 0));
+    const totalTxs      = await db.collection('transactions').get().then(s => s.size);
+
+    // Recent users (last 5 by createdAt)
+    const recentUsers = users
+      .filter(u => u.createdAt)
+      .sort((a, b) => (b.createdAt?._seconds || 0) - (a.createdAt?._seconds || 0))
+      .slice(0, 5)
+      .map(u => ({ email: u.email, credits: u.isAdmin ? 999999 : (u.credits || 0) }));
+
+    res.json({
+      success:          true,
+      totalUsers:       users.length,
+      totalRevenue:     Math.round(totalRevenue),
+      totalTransactions: totalTxs,
+      totalCredits,
+      recentUsers,
+      recentTxs:        txs,
+    });
+  } catch (err) {
+    console.error('[admin/stats]', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/admin/users — lista de usuarios
+app.get('/api/admin/users', requireAdmin, async (req, res) => {
+  try {
+    const snap  = await db.collection('users').orderBy('createdAt', 'desc').get();
+    const users = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    res.json({ success: true, users });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/admin/user/:uid — detalle de un usuario
+app.get('/api/admin/user/:uid', requireAdmin, async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const [userSnap, txSnap] = await Promise.all([
+      db.collection('users').doc(uid).get(),
+      db.collection('transactions').where('uid', '==', uid).orderBy('createdAt', 'desc').get(),
+    ]);
+
+    if (!userSnap.exists) return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
+
+    res.json({
+      success:      true,
+      user:         { uid, ...userSnap.data() },
+      transactions: txSnap.docs.map(d => d.data()),
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/admin/credits — modificar créditos
+app.post('/api/admin/credits', requireAdmin, async (req, res) => {
+  try {
+    const { uid, op, amount, reason } = req.body;
+    if (!uid || !op || !amount) return res.status(400).json({ success: false, error: 'Faltan parámetros.' });
+
+    const ref  = db.collection('users').doc(uid);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
+
+    const current = snap.data().credits || 0;
+    let newCredits;
+
+    if (op === 'add')      newCredits = current + Number(amount);
+    else if (op === 'subtract') newCredits = Math.max(0, current - Number(amount));
+    else if (op === 'set') newCredits = Number(amount);
+    else return res.status(400).json({ success: false, error: 'Operación inválida.' });
+
+    await ref.update({ credits: newCredits });
+
+    // Log del ajuste manual
+    await db.collection('admin_logs').add({
+      action:    'credits_edit',
+      targetUid: uid,
+      adminUid:  req.user.uid,
+      op, amount: Number(amount),
+      prevCredits: current,
+      newCredits,
+      reason:    reason || '',
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    console.log(`[admin] créditos editados — uid:${uid} op:${op} amount:${amount} → ${newCredits}`);
+    res.json({ success: true, newCredits });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/admin/block — bloquear/desbloquear usuario
+app.post('/api/admin/block', requireAdmin, async (req, res) => {
+  try {
+    const { uid, blocked } = req.body;
+    if (!uid) return res.status(400).json({ success: false, error: 'Falta el uid.' });
+
+    await db.collection('users').doc(uid).update({ blocked: !!blocked });
+
+    await db.collection('admin_logs').add({
+      action:    blocked ? 'user_blocked' : 'user_unblocked',
+      targetUid: uid,
+      adminUid:  req.user.uid,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    console.log(`[admin] usuario ${blocked ? 'bloqueado' : 'desbloqueado'} — uid:${uid}`);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/admin/transactions — todas las transacciones
+app.get('/api/admin/transactions', requireAdmin, async (req, res) => {
+  try {
+    const snap = await db.collection('transactions')
+      .orderBy('createdAt', 'desc')
+      .limit(200)
+      .get();
+    res.json({ success: true, transactions: snap.docs.map(d => d.data()) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 app.listen(port, () => {

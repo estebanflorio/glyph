@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLYPH — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:     #0a0a0b;
+  --s1:     #111113;
+  --s2:     #18181c;
+  --s3:     #222228;
+  --border: #2a2a32;
+  --accent: #c8f135;
+  --purple: #7c6af7;
+  --text:   #e8e8ec;
+  --text2:  #8888a0;
+  --text3:  #444458;
+  --danger: #ff4757;
+  --success:#2ed573;
+  --warn:   #ffa502;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  display: flex;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px; min-height: 100vh;
+  background: var(--s1);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; left: 0; top: 0; bottom: 0;
+  z-index: 10;
+}
+
+.sidebar-logo {
+  display: flex; align-items: center; gap: 8px;
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 16px; font-weight: 800;
+}
+
+.logo-dot {
+  width: 7px; height: 7px;
+  background: var(--accent); border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+.sidebar-tag {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  color: var(--danger); letter-spacing: 2px;
+  text-transform: uppercase; margin-left: auto;
+  background: rgba(255,71,87,.1); border: 1px solid rgba(255,71,87,.25);
+  padding: 2px 6px; border-radius: 4px;
+}
+
+.sidebar-nav { flex: 1; padding: 16px 0; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 20px;
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  color: var(--text2); cursor: pointer;
+  transition: all .2s; letter-spacing: .5px;
+  border-left: 2px solid transparent;
+}
+
+.nav-item:hover { color: var(--text); background: var(--s2); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(200,241,53,.05); }
+.nav-item .nav-icon { font-size: 14px; }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.admin-user {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text3); margin-bottom: 10px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.btn-logout {
+  width: 100%; padding: 8px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text2);
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  cursor: pointer; transition: all .2s; letter-spacing: .5px;
+}
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: 220px;
+  flex: 1; padding: 32px 40px;
+  position: relative; z-index: 1;
+  min-height: 100vh;
+}
+
+.page { display: none; }
+.page.active { display: block; animation: fadeIn .3s ease; }
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.page-title {
+  font-size: 28px; font-weight: 800;
+  letter-spacing: -1px; margin-bottom: 4px;
+}
+.page-title span { color: var(--accent); }
+
+.page-sub {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text3); letter-spacing: 1px; margin-bottom: 28px;
+}
+
+/* ── STATS GRID ── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 24px;
+  position: relative; overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--c, var(--accent));
+}
+
+.stat-label {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--text3); letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.stat-value {
+  font-size: 32px; font-weight: 800;
+  letter-spacing: -1px; color: var(--text);
+  line-height: 1;
+}
+
+.stat-sub {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--text3); margin-top: 6px;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text3); letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* ── SEARCH ── */
+.search-bar {
+  display: flex; gap: 10px; margin-bottom: 16px;
+}
+
+.search-input {
+  flex: 1; background: var(--s2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px;
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  color: var(--text); outline: none; transition: border-color .2s;
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text3); }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%; border-collapse: collapse;
+  font-family: 'DM Mono', monospace; font-size: 12px;
+}
+
+thead tr { border-bottom: 1px solid var(--border); }
+
+th {
+  text-align: left; padding: 10px 14px;
+  color: var(--text3); letter-spacing: 1.5px;
+  font-size: 10px; text-transform: uppercase;
+  font-weight: 400;
+}
+
+tbody tr {
+  border-bottom: 1px solid rgba(42,42,50,.6);
+  transition: background .15s;
+}
+tbody tr:hover { background: var(--s2); }
+tbody tr:last-child { border-bottom: none; }
+
+td { padding: 12px 14px; color: var(--text2); vertical-align: middle; }
+td.highlight { color: var(--text); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 20px;
+  font-size: 10px; letter-spacing: 1px;
+}
+.badge-green { background: rgba(46,213,115,.1); color: var(--success); border: 1px solid rgba(46,213,115,.2); }
+.badge-purple { background: rgba(124,106,247,.1); color: var(--purple); border: 1px solid rgba(124,106,247,.2); }
+.badge-red { background: rgba(255,71,87,.1); color: var(--danger); border: 1px solid rgba(255,71,87,.2); }
+.badge-yellow { background: rgba(255,165,2,.1); color: var(--warn); border: 1px solid rgba(255,165,2,.2); }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 8px 16px; border-radius: 6px;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  letter-spacing: .5px; cursor: pointer; border: none;
+  transition: all .2s;
+}
+.btn-primary { background: var(--accent); color: #0a0a0b; font-weight: 600; }
+.btn-primary:hover { background: #d4f545; }
+.btn-danger { background: rgba(255,71,87,.12); color: var(--danger); border: 1px solid rgba(255,71,87,.25); }
+.btn-danger:hover { background: rgba(255,71,87,.2); }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+.btn-sm { padding: 5px 10px; font-size: 10px; }
+.btn-purple { background: rgba(124,106,247,.12); color: var(--purple); border: 1px solid rgba(124,106,247,.25); }
+.btn-purple:hover { background: rgba(124,106,247,.2); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,10,11,.9); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+
+.modal {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 14px; padding: 32px;
+  width: 100%; max-width: 440px;
+  position: relative;
+}
+
+.modal-title {
+  font-size: 20px; font-weight: 800; letter-spacing: -.5px;
+  margin-bottom: 6px;
+}
+.modal-title span { color: var(--accent); }
+
+.modal-sub {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text3); margin-bottom: 24px;
+}
+
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 6px; width: 28px; height: 28px;
+  cursor: pointer; color: var(--text2); font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { color: var(--text); border-color: var(--text2); }
+
+.field { margin-bottom: 16px; }
+.field label {
+  display: block; font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--text3); letter-spacing: 1.5px;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.field input, .field select {
+  display: block; width: 100%;
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px;
+  font-family: 'DM Mono', monospace; font-size: 13px;
+  color: var(--text); outline: none; transition: border-color .2s;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); }
+
+.field-row { display: flex; gap: 10px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  padding: 12px 18px; background: var(--s1);
+  border: 1px solid var(--border); border-radius: 8px;
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  transform: translateY(60px); opacity: 0;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { border-color: rgba(46,213,115,.4); }
+.toast.err { border-color: rgba(255,71,87,.4); }
+
+/* ── AUTH OVERLAY ── */
+.auth-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(10,10,11,.98); backdrop-filter: blur(20px);
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-overlay.hidden { display: none; }
+
+.auth-box {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 14px; padding: 40px;
+  width: 100%; max-width: 380px; text-align: center;
+}
+
+.auth-icon { font-size: 40px; margin-bottom: 16px; }
+.auth-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.auth-sub {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text3); margin-bottom: 24px; line-height: 1.6;
+}
+
+/* ── LOADING ── */
+.loading {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  color: var(--text3); padding: 32px 0;
+}
+.loading-dot {
+  width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
+  animation: blink .8s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center; padding: 48px 20px;
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3);
+}
+.empty .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: .4; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+@media (max-width: 768px) {
+  .sidebar { width: 60px; }
+  .sidebar-logo span, .sidebar-tag, .nav-item span:not(.nav-icon), .admin-user, .btn-logout { display: none; }
+  .nav-item { justify-content: center; padding: 12px; }
+  .main { margin-left: 60px; padding: 20px; }
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH OVERLAY -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-icon">🔐</div>
+    <div class="auth-title">Acceso restringido</div>
+    <div class="auth-sub">Este panel es exclusivo para administradores de GLYPH. Verificando credenciales...</div>
+    <div class="loading" style="justify-content:center">
+      <div class="loading-dot"></div>
+      <span>Verificando...</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CRÉDITOS -->
+<div class="modal-overlay hidden" id="creditsModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('creditsModal')">✕</button>
+    <div class="modal-title">Editar <span>créditos</span></div>
+    <div class="modal-sub" id="creditsModalSub">// usuario · créditos actuales: —</div>
+    <input type="hidden" id="creditsModalUid">
+    <div class="field">
+      <label>Operación</label>
+      <select id="creditsOp">
+        <option value="add">➕ Agregar créditos</option>
+        <option value="subtract">➖ Restar créditos</option>
+        <option value="set">🎯 Establecer cantidad exacta</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Cantidad</label>
+      <input type="number" id="creditsAmount" min="1" max="99999" value="10" placeholder="10">
+    </div>
+    <div class="field">
+      <label>Motivo (opcional)</label>
+      <input type="text" id="creditsReason" placeholder="ej: compensación por error">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-primary" onclick="applyCredits()" style="flex:1">Aplicar</button>
+      <button class="btn btn-ghost" onclick="closeModal('creditsModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER USUARIO -->
+<div class="modal-overlay hidden" id="userModal">
+  <div class="modal" style="max-width:520px">
+    <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+    <div class="modal-title">Detalle de <span>usuario</span></div>
+    <div id="userModalContent"></div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-dot"></div>
+    <span>GLYPH</span>
+    <span class="sidebar-tag">ADMIN</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="navigate('dashboard', this)">
+      <span class="nav-icon">📊</span>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="navigate('users', this)">
+      <span class="nav-icon">👥</span>
+      <span>Usuarios</span>
+    </div>
+    <div class="nav-item" onclick="navigate('transactions', this)">
+      <span class="nav-icon">💳</span>
+      <span>Transacciones</span>
+    </div>
+    <div class="nav-item" onclick="navigate('logs', this)">
+      <span class="nav-icon">📋</span>
+      <span>Actividad</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-user" id="adminEmail">—</div>
+    <button class="btn-logout" onclick="logout()">← Salir</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-title">Dashboard <span>GLYPH</span></div>
+    <div class="page-sub">// RESUMEN GENERAL · ACTUALIZADO EN TIEMPO REAL</div>
+
+    <div class="stats-grid">
+      <div class="stat-card" style="--c:var(--accent)">
+        <div class="stat-label">Usuarios totales</div>
+        <div class="stat-value" id="stat-users">—</div>
+        <div class="stat-sub">registrados</div>
+      </div>
+      <div class="stat-card" style="--c:var(--purple)">
+        <div class="stat-label">Ingresos totales</div>
+        <div class="stat-value" id="stat-revenue">—</div>
+        <div class="stat-sub">ARS acumulados</div>
+      </div>
+      <div class="stat-card" style="--c:var(--success)">
+        <div class="stat-label">Transacciones</div>
+        <div class="stat-value" id="stat-txs">—</div>
+        <div class="stat-sub">pagos aprobados</div>
+      </div>
+      <div class="stat-card" style="--c:var(--warn)">
+        <div class="stat-label">Créditos activos</div>
+        <div class="stat-value" id="stat-credits">—</div>
+        <div class="stat-sub">en circulación</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Últimos usuarios</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('users', document.querySelector('[onclick*=users]'))">Ver todos →</button>
+        </div>
+        <div id="recentUsers"><div class="loading"><div class="loading-dot"></div>Cargando...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Últimas transacciones</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('transactions', document.querySelector('[onclick*=transactions]'))">Ver todas →</button>
+        </div>
+        <div id="recentTxs"><div class="loading"><div class="loading-dot"></div>Cargando...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ USUARIOS ══ -->
+  <div class="page" id="page-users">
+    <div class="page-title">Gestión de <span>usuarios</span></div>
+    <div class="page-sub">// BUSCÁ · EDITÁ CRÉDITOS · BLOQUEÁ CUENTAS</div>
+
+    <div class="search-bar">
+      <input class="search-input" id="userSearch" placeholder="Buscar por email..." oninput="filterUsers()">
+      <button class="btn btn-ghost" onclick="loadUsers()">↺ Actualizar</button>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Créditos</th>
+              <th>Estado</th>
+              <th>Registro</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="usersTable">
+            <tr><td colspan="5"><div class="loading"><div class="loading-dot"></div>Cargando usuarios...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TRANSACCIONES ══ -->
+  <div class="page" id="page-transactions">
+    <div class="page-title">Historial de <span>pagos</span></div>
+    <div class="page-sub">// TODAS LAS TRANSACCIONES DE MERCADOPAGO</div>
+
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+      <div class="stat-card" style="--c:var(--success)">
+        <div class="stat-label">Este mes</div>
+        <div class="stat-value" id="tx-month">—</div>
+        <div class="stat-sub">ARS ingresados</div>
+      </div>
+      <div class="stat-card" style="--c:var(--accent)">
+        <div class="stat-label">Plan más vendido</div>
+        <div class="stat-value" id="tx-top-plan" style="font-size:20px;margin-top:4px;">—</div>
+        <div class="stat-sub">en cantidad</div>
+      </div>
+      <div class="stat-card" style="--c:var(--purple)">
+        <div class="stat-label">Ticket promedio</div>
+        <div class="stat-value" id="tx-avg">—</div>
+        <div class="stat-sub">ARS por compra</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Plan</th>
+              <th>Créditos</th>
+              <th>Monto</th>
+              <th>Payment ID</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="txTable">
+            <tr><td colspan="6"><div class="loading"><div class="loading-dot"></div>Cargando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LOGS / ACTIVIDAD ══ -->
+  <div class="page" id="page-logs">
+    <div class="page-title">Actividad <span>reciente</span></div>
+    <div class="page-sub">// OPERACIONES DE IA · ÚLTIMAS 100 ENTRADAS</div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Operación</th>
+              <th>Créditos</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="logsTable">
+            <tr><td colspan="5">
+              <div class="empty">
+                <div class="empty-icon">📋</div>
+                Los logs de operaciones aparecerán aquí cuando agregues el registro de actividad al server.
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+// ════════════════════════════════════════════════════════════════
+// FIREBASE
+// ════════════════════════════════════════════════════════════════
+const { initializeApp }    = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+const { getAuth, onAuthStateChanged, signOut }
+  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+
+// Obtener config del server
+const cfg = await fetch('/api/firebase-config').then(r => r.json());
+const fbApp  = initializeApp(cfg);
+const fbAuth = getAuth(fbApp);
+
+let currentUser = null;
+let idToken     = null;
+let allUsers    = [];
+
+// ── AUTH CHECK ──────────────────────────────────────────────
+onAuthStateChanged(fbAuth, async user => {
+  if (!user) {
+    window.location.href = '/login';
+    return;
+  }
+
+  idToken = await user.getIdToken(true);
+
+  // Verificar que es admin
+  const me = await fetch('/api/me', {
+    headers: { Authorization: `Bearer ${idToken}` }
+  }).then(r => r.json());
+
+  if (!me.isAdmin) {
+    document.getElementById('authOverlay').querySelector('.auth-sub').textContent =
+      'No tenés permisos de administrador.';
+    document.getElementById('authOverlay').querySelector('.loading').innerHTML =
+      '<a href="/app" style="color:var(--accent);font-family:DM Mono,monospace;font-size:12px;">← Volver a la app</a>';
+    return;
+  }
+
+  currentUser = user;
+  document.getElementById('authOverlay').classList.add('hidden');
+  document.getElementById('adminEmail').textContent = user.email;
+
+  // Cargar datos iniciales
+  loadDashboard();
+  loadUsers();
+  loadTransactions();
+});
+
+// ── HELPERS ────────────────────────────────────────────────
+async function api(endpoint, opts = {}) {
+  idToken = await currentUser.getIdToken(true);
+  const res = await fetch(endpoint, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${idToken}`,
+      ...(opts.headers || {})
+    }
+  });
+  return res.json();
+}
+
+function fmt(n) { return Number(n).toLocaleString('es-AR'); }
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  const d = ts._seconds ? new Date(ts._seconds * 1000) : new Date(ts);
+  return d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
+let toastTimer;
+window.showToast = (msg, type = 'ok') => {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
+};
+
+// ── NAVIGATION ─────────────────────────────────────────────
+window.navigate = (page, el) => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  el.classList.add('active');
+};
+
+window.logout = async () => {
+  await signOut(fbAuth);
+  window.location.href = '/login';
+};
+
+// ── MODALS ──────────────────────────────────────────────────
+window.closeModal = id => document.getElementById(id).classList.add('hidden');
+
+// ════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════════════════════════
+async function loadDashboard() {
+  const data = await api('/api/admin/stats');
+  if (!data.success) return;
+
+  document.getElementById('stat-users').textContent   = fmt(data.totalUsers);
+  document.getElementById('stat-revenue').textContent = '$' + fmt(data.totalRevenue);
+  document.getElementById('stat-txs').textContent     = fmt(data.totalTransactions);
+  document.getElementById('stat-credits').textContent = fmt(data.totalCredits);
+
+  // Recent users
+  const ru = document.getElementById('recentUsers');
+  if (!data.recentUsers?.length) { ru.innerHTML = '<div class="empty"><div class="empty-icon">👥</div>Sin usuarios aún</div>'; return; }
+
+  ru.innerHTML = `<table style="width:100%">
+    ${data.recentUsers.map(u => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 0;font-family:DM Mono,monospace;font-size:11px;color:var(--text2)">${u.email}</td>
+        <td style="padding:10px 0;font-family:DM Mono,monospace;font-size:11px;color:var(--accent);text-align:right">⚡ ${fmt(u.credits)}</td>
+      </tr>`).join('')}
+  </table>`;
+
+  // Recent transactions
+  const rt = document.getElementById('recentTxs');
+  if (!data.recentTxs?.length) { rt.innerHTML = '<div class="empty"><div class="empty-icon">💳</div>Sin transacciones aún</div>'; return; }
+
+  rt.innerHTML = `<table style="width:100%">
+    ${data.recentTxs.map(t => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 0;font-family:DM Mono,monospace;font-size:11px;color:var(--text2)">${t.plan?.toUpperCase() || '—'}</td>
+        <td style="padding:10px 0;font-family:DM Mono,monospace;font-size:11px;color:var(--success);text-align:right">$${fmt(t.amount)}</td>
+      </tr>`).join('')}
+  </table>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// USUARIOS
+// ════════════════════════════════════════════════════════════════
+async function loadUsers() {
+  const data = await api('/api/admin/users');
+  allUsers = data.users || [];
+  renderUsers(allUsers);
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('usersTable');
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">👥</div>Sin usuarios</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td class="highlight">${u.email}</td>
+      <td>
+        <span style="color:var(--accent);font-weight:600">
+          ${u.isAdmin ? '∞' : fmt(u.credits)}
+        </span>
+        ${u.isAdmin ? ' <span class="badge badge-purple">ADMIN</span>' : ''}
+      </td>
+      <td>
+        ${u.blocked
+          ? '<span class="badge badge-red">BLOQUEADO</span>'
+          : '<span class="badge badge-green">ACTIVO</span>'}
+      </td>
+      <td>${fmtDate(u.createdAt)}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-purple" onclick="openCreditsModal('${u.uid}','${u.email}',${u.credits})">⚡ Créditos</button>
+          <button class="btn btn-sm btn-ghost" onclick="openUserModal('${u.uid}')">👁 Ver</button>
+          <button class="btn btn-sm ${u.blocked ? 'btn-primary' : 'btn-danger'}"
+            onclick="toggleBlock('${u.uid}','${u.email}',${!!u.blocked})">
+            ${u.blocked ? '✓ Desbloquear' : '⊘ Bloquear'}
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+window.filterUsers = () => {
+  const q = document.getElementById('userSearch').value.toLowerCase();
+  renderUsers(allUsers.filter(u => u.email.toLowerCase().includes(q)));
+};
+
+window.loadUsers = loadUsers;
+
+// ── CRÉDITOS MODAL ──────────────────────────────────────────
+window.openCreditsModal = (uid, email, credits) => {
+  document.getElementById('creditsModalUid').value = uid;
+  document.getElementById('creditsModalSub').textContent = `// ${email} · créditos actuales: ${fmt(credits)}`;
+  document.getElementById('creditsAmount').value = 10;
+  document.getElementById('creditsReason').value = '';
+  document.getElementById('creditsModal').classList.remove('hidden');
+};
+
+window.applyCredits = async () => {
+  const uid    = document.getElementById('creditsModalUid').value;
+  const op     = document.getElementById('creditsOp').value;
+  const amount = parseInt(document.getElementById('creditsAmount').value);
+  const reason = document.getElementById('creditsReason').value;
+
+  if (!amount || amount < 1) return showToast('Ingresá una cantidad válida', 'err');
+
+  const res = await api('/api/admin/credits', {
+    method: 'POST',
+    body: JSON.stringify({ uid, op, amount, reason })
+  });
+
+  if (res.success) {
+    showToast(`✓ Créditos actualizados — nuevo saldo: ${fmt(res.newCredits)}`, 'ok');
+    closeModal('creditsModal');
+    loadUsers();
+    loadDashboard();
+  } else {
+    showToast('Error: ' + res.error, 'err');
+  }
+};
+
+// ── USER DETAIL MODAL ────────────────────────────────────────
+window.openUserModal = async (uid) => {
+  document.getElementById('userModal').classList.remove('hidden');
+  document.getElementById('userModalContent').innerHTML =
+    '<div class="loading"><div class="loading-dot"></div>Cargando...</div>';
+
+  const res = await api('/api/admin/user/' + uid);
+  if (!res.success) {
+    document.getElementById('userModalContent').innerHTML = '<p style="color:var(--danger);font-family:DM Mono,monospace;font-size:12px">Error al cargar usuario</p>';
+    return;
+  }
+
+  const u = res.user;
+  const txs = res.transactions || [];
+
+  document.getElementById('userModalContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px">EMAIL</div>
+        <div style="font-family:DM Mono,monospace;font-size:11px;color:var(--text)">${u.email}</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px">CRÉDITOS</div>
+        <div style="font-size:20px;font-weight:800;color:var(--accent)">${u.isAdmin ? '∞' : fmt(u.credits)}</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px">REGISTRO</div>
+        <div style="font-family:DM Mono,monospace;font-size:11px;color:var(--text)">${fmtDate(u.createdAt)}</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px">TOTAL GASTADO</div>
+        <div style="font-size:18px;font-weight:800;color:var(--success)">$${fmt(txs.reduce((a,t) => a + (t.amount||0), 0))}</div>
+      </div>
+    </div>
+
+    <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:10px">HISTORIAL DE PAGOS</div>
+    ${txs.length ? `
+      <table style="width:100%;font-family:DM Mono,monospace;font-size:11px;">
+        <thead><tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:6px 0;color:var(--text3)">Plan</th>
+          <th style="text-align:left;padding:6px 0;color:var(--text3)">Créditos</th>
+          <th style="text-align:left;padding:6px 0;color:var(--text3)">Monto</th>
+          <th style="text-align:left;padding:6px 0;color:var(--text3)">Fecha</th>
+        </tr></thead>
+        <tbody>
+          ${txs.map(t => `<tr style="border-bottom:1px solid rgba(42,42,50,.5)">
+            <td style="padding:8px 0;color:var(--text)">${t.plan?.toUpperCase() || '—'}</td>
+            <td style="padding:8px 0;color:var(--accent)">+${fmt(t.credits)}</td>
+            <td style="padding:8px 0;color:var(--success)">$${fmt(t.amount)}</td>
+            <td style="padding:8px 0;color:var(--text3)">${fmtDate(t.createdAt)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` :
+      '<div class="empty" style="padding:20px 0"><div class="empty-icon">💳</div>Sin pagos registrados</div>'
+    }
+  `;
+};
+
+// ── BLOQUEAR USUARIO ─────────────────────────────────────────
+window.toggleBlock = async (uid, email, isBlocked) => {
+  const action = isBlocked ? 'desbloquear' : 'bloquear';
+  if (!confirm(`¿Querés ${action} a ${email}?`)) return;
+
+  const res = await api('/api/admin/block', {
+    method: 'POST',
+    body: JSON.stringify({ uid, blocked: !isBlocked })
+  });
+
+  if (res.success) {
+    showToast(`✓ Usuario ${isBlocked ? 'desbloqueado' : 'bloqueado'}`, 'ok');
+    loadUsers();
+  } else {
+    showToast('Error: ' + res.error, 'err');
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+// TRANSACCIONES
+// ════════════════════════════════════════════════════════════════
+async function loadTransactions() {
+  const data = await api('/api/admin/transactions');
+  const txs  = data.transactions || [];
+
+  // Stats
+  const now       = new Date();
+  const thisMonth = txs.filter(t => {
+    const d = t.createdAt?._seconds ? new Date(t.createdAt._seconds * 1000) : new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+
+  const monthRevenue = thisMonth.reduce((a, t) => a + (t.amount || 0), 0);
+  document.getElementById('tx-month').textContent = '$' + fmt(monthRevenue);
+
+  const planCount = {};
+  txs.forEach(t => { planCount[t.plan] = (planCount[t.plan] || 0) + 1; });
+  const topPlan = Object.entries(planCount).sort((a,b) => b[1]-a[1])[0];
+  document.getElementById('tx-top-plan').textContent = topPlan ? topPlan[0].toUpperCase() : '—';
+
+  const avg = txs.length ? txs.reduce((a,t) => a + (t.amount||0), 0) / txs.length : 0;
+  document.getElementById('tx-avg').textContent = '$' + fmt(Math.round(avg));
+
+  // Table
+  const tbody = document.getElementById('txTable');
+  if (!txs.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">💳</div>Sin transacciones aún</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = txs.map(t => `
+    <tr>
+      <td class="highlight">${t.uid?.slice(0,8)}...</td>
+      <td><span class="badge ${t.plan==='studio'?'badge-purple':t.plan==='pro'?'badge-green':'badge-yellow'}">${t.plan?.toUpperCase()||'—'}</span></td>
+      <td style="color:var(--accent)">+${fmt(t.credits)}</td>
+      <td style="color:var(--success);font-weight:600">$${fmt(t.amount)}</td>
+      <td style="color:var(--text3);font-size:10px">${t.paymentId?.slice(0,12)}...</td>
+      <td>${fmtDate(t.createdAt)}</td>
+    </tr>
+  `).join('');
+}
+</script>
+</body>
+</html>
