@@ -459,7 +459,8 @@ td.highlight { color: var(--text); }
   </nav>
   <div class="sidebar-footer">
     <div class="admin-user" id="adminEmail">—</div>
-    <button class="btn-logout" onclick="logout()">← Salir</button>
+    <a href="/app" style="display:block;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);text-decoration:none;padding:8px;margin-bottom:8px;border:1px solid var(--border);border-radius:6px;transition:all .2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">← Ir a la app</a>
+    <button class="btn-logout" onclick="logout()">⊘ Cerrar sesión</button>
   </div>
 </aside>
 
@@ -640,7 +641,7 @@ let allUsers    = [];
 // ── AUTH CHECK ──────────────────────────────────────────────
 onAuthStateChanged(fbAuth, async user => {
   if (!user) {
-    window.location.href = '/login';
+    window.location.href = '/login?redirect=admin';
     return;
   }
 
@@ -653,9 +654,12 @@ onAuthStateChanged(fbAuth, async user => {
 
   if (!me.isAdmin) {
     document.getElementById('authOverlay').querySelector('.auth-sub').textContent =
-      'No tenés permisos de administrador.';
-    document.getElementById('authOverlay').querySelector('.loading').innerHTML =
-      '<a href="/app" style="color:var(--accent);font-family:DM Mono,monospace;font-size:12px;">← Volver a la app</a>';
+      'Tu cuenta no tiene permisos de administrador.';
+    document.getElementById('authOverlay').querySelector('.loading').innerHTML = `
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="/app" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;padding:8px 16px;border:1px solid rgba(200,241,53,0.3);border-radius:6px;">← Ir a la app</a>
+        <a href="/login" style="color:var(--text2);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;padding:8px 16px;border:1px solid var(--border);border-radius:6px;">Cambiar cuenta</a>
+      </div>`;
     return;
   }
 

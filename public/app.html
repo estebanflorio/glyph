@@ -765,6 +765,23 @@
   .toast.error   { border-color: rgba(255,71,87,0.4); }
   .toast.info    { border-color: rgba(124,106,247,0.4); }
 
+
+  /* ── ADMIN BTN ── */
+  .admin-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    background: rgba(124,106,247,0.1);
+    border: 1px solid rgba(124,106,247,0.3);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: #7c6af7; text-decoration: none;
+    transition: all .2s; letter-spacing: .5px;
+  }
+  .admin-btn:hover {
+    background: rgba(124,106,247,0.2);
+    border-color: rgba(124,106,247,0.5);
+  }
+
 </style>
 </head>
 <body>
@@ -1574,13 +1591,19 @@ async function refreshUserData() {
   renderLoggedIn(data);
 }
 
-function renderLoggedIn({ email, credits }) {
+function renderLoggedIn({ email, credits, isAdmin }) {
   const ha = document.getElementById('headerAuth');
+  const adminBtn = isAdmin
+    ? `<a href="/admin" class="admin-btn" title="Panel de administración">⚙ Admin</a>`
+    : '';
   ha.innerHTML = `
-    <div class="credits-badge" onclick="openPlanesModal()" title="Comprar más créditos">
-      <span class="credit-icon">⚡</span>
-      <span class="credit-num">${credits}</span>
-      <span class="credit-label">CRÉDITOS</span>
+    ${adminBtn}
+    <div class="credits-badge" onclick="${isAdmin ? '' : 'openPlanesModal()'}" 
+         title="${isAdmin ? 'Administrador — créditos ilimitados' : 'Comprar más créditos'}"
+         style="${isAdmin ? 'cursor:default;border-color:rgba(124,106,247,0.4);' : ''}">
+      <span class="credit-icon">${isAdmin ? '👑' : '⚡'}</span>
+      <span class="credit-num">${isAdmin ? '∞' : credits}</span>
+      <span class="credit-label">${isAdmin ? 'ADMIN' : 'CRÉDITOS'}</span>
     </div>
     <div class="user-btn" onclick="logout()">
       <span>👤</span>

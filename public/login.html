@@ -30,9 +30,28 @@
   const app    = initializeApp(config);
   const auth   = getAuth(app);
 
-  // Si ya está logueado, redirigir directo a la app
-  onAuthStateChanged(auth, user => {
-    if (user) window.location.href = '/app';
+  // Si ya está logueado, redirigir según rol
+  onAuthStateChanged(auth, async user => {
+    if (!user) return;
+    try {
+      const token = await user.getIdToken(true);
+      const me    = await fetch('/api/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(r => r.json());
+
+      // Verificar si hay redirect param
+      const params   = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect');
+
+      // Redirigir según rol y param
+      if (me.isAdmin && (redirect === 'admin' || !redirect)) {
+        window.location.href = '/admin';
+      } else {
+        window.location.href = '/app';
+      }
+    } catch {
+      window.location.href = '/app';
+    }
   });
 
   // ── TABS ──
