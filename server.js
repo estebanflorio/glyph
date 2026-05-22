@@ -99,7 +99,7 @@ const limitWebhook  = rateLimit({ windowMs: 60_000,  max: 30  }); // 30 webhooks
 app.use(limitGeneral);
 
 // ─── FIREBASE CONFIG (enviada al frontend) ────────────────────
-app.get('/api/firebase-config', limitAuth, (req, res) => {
+app.get('/api/firebase-config', (req, res) => {
   res.json({
     apiKey:     process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN,
