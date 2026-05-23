@@ -1016,8 +1016,160 @@ footer {
 }
 
 /* ════════════════════════════════════════
-   ANIMATIONS
+   DEMO ANIMADA
 ════════════════════════════════════════ */
+.demo-wrap {
+  display: grid; grid-template-columns: 200px 1fr; gap: 16px;
+}
+.demo-sidebar {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+}
+.demo-nav-item {
+  padding: 8px 10px; border-radius: 7px;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text3); margin-bottom: 4px;
+  transition: all .3s; cursor: default;
+}
+.demo-nav-item.active {
+  background: rgba(200,241,53,.1);
+  border: 1px solid rgba(200,241,53,.2);
+  color: var(--accent);
+}
+.demo-main {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px;
+  min-height: 180px; display: flex; flex-direction: column; justify-content: center;
+}
+.demo-step { animation: fadeIn .4s ease both; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.demo-step-label {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 2px; color: var(--accent); text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.demo-upload {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; text-align: center;
+}
+.demo-upload-icon { font-size: 24px; margin-bottom: 8px; }
+.demo-upload-name { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2); margin-bottom: 10px; }
+.demo-upload-bar {
+  height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; margin-bottom: 8px;
+}
+.demo-upload-fill {
+  height: 100%; width: 0; background: var(--accent); border-radius: 2px;
+  animation: fillBar 1.2s ease forwards;
+}
+@keyframes fillBar { to { width: 100%; } }
+.demo-upload-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 1px; }
+
+.demo-processing { text-align: center; padding: 20px 0; }
+.demo-spin { font-size: 32px; animation: spin 1.2s linear infinite; display: inline-block; margin-bottom: 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.demo-proc-txt { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); margin-bottom: 12px; }
+.demo-proc-dots { display: flex; justify-content: center; gap: 6px; }
+.demo-proc-dots span {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  animation: dotPulse 1s infinite;
+}
+.demo-proc-dots span:nth-child(2) { animation-delay: .2s; }
+.demo-proc-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes dotPulse { 0%,100%{opacity:.2;transform:scale(.8)} 50%{opacity:1;transform:scale(1)} }
+
+.demo-result-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.demo-card {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px;
+}
+.demo-img-orig {
+  aspect-ratio: 4/3; border-radius: 6px;
+  background: var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.demo-img-result {
+  aspect-ratio: 4/3; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.checker-demo {
+  background-image:
+    linear-gradient(45deg,#1a1a20 25%,transparent 25%),
+    linear-gradient(-45deg,#1a1a20 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#1a1a20 75%),
+    linear-gradient(-45deg,transparent 75%,#1a1a20 75%);
+  background-size:10px 10px;
+  background-position:0 0,0 5px,5px -5px,-5px 0;
+  background-color:#111113;
+}
+.demo-arrow { color: var(--accent); font-size: 18px; flex-shrink: 0; }
+.demo-actions { display: flex; align-items: center; gap: 10px; }
+.demo-btn-dl {
+  padding: 7px 14px; background: var(--accent); color: #0a0a0b;
+  border-radius: 7px; font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 600; cursor: default;
+}
+.demo-badge-ok {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--success); letter-spacing: .5px;
+  animation: fadeIn .5s .2s ease both; opacity: 0;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE MEJORADO
+════════════════════════════════════════ */
+@media (max-width: 900px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .nav-mobile-btn {
+    display: inline-flex; align-items: center;
+    padding: 9px 18px;
+    background: var(--accent); color: #0a0a0b;
+    border-radius: 8px; font-family: 'DM Mono', monospace;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px;
+    text-decoration: none; transition: all .2s;
+  }
+  .section { padding: 60px 24px; }
+  .dolor-grid { grid-template-columns: repeat(2,1fr); }
+  .tools-grid { grid-template-columns: 1fr; }
+  .sub-inner { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+  .arg-inner { grid-template-columns: 1fr; gap: 40px; padding: 60px 24px; }
+  .pricing-cards { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
+  .pricing-section { padding: 60px 24px; }
+  .faq-section { padding: 60px 24px; }
+  footer { padding: 40px 24px; flex-direction: column; align-items: flex-start; }
+  .hero { padding: 120px 24px 60px; }
+  .divider-line { margin: 0 24px; }
+  .quien-grid { grid-template-columns: 1fr; }
+  .trust-grid { grid-template-columns: 1fr; }
+  .hero-trust-sep { display: none; }
+  .hero-trust-row { flex-direction: column; gap: 10px; }
+  /* demo mobile: ocultar sidebar, layout vertical */
+  .demo-wrap { grid-template-columns: 1fr; }
+  .demo-sidebar { display: none; }
+  .hero-mockup { margin-top: 40px; }
+}
+
+@media (max-width: 600px) {
+  .dolor-grid { grid-template-columns: 1fr; }
+  h1 { letter-spacing: -1px; font-size: clamp(30px, 8vw, 48px); }
+  .hero-sub { font-size: 15px; }
+  .btn-primary { padding: 13px 24px; font-size: 12px; }
+  .btn-secondary { padding: 13px 20px; font-size: 12px; }
+  .hero-actions { flex-direction: column; width: 100%; }
+  .hero-actions a { width: 100%; text-align: center; justify-content: center; }
+  .hero-badge { font-size: 10px; text-align: center; }
+  .demo-result-row { flex-direction: column; }
+  .demo-arrow { transform: rotate(90deg); }
+  .pricing-cards { max-width: 100%; }
+  .arg-visual { padding: 24px; }
+  .arg-price-num { font-size: 32px; }
+  .quien-card { padding: 24px 20px; }
+  .trust-card { flex-direction: column; gap: 12px; }
+  footer { gap: 16px; }
+  .footer-links { gap: 16px; }
+}
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -1132,48 +1284,69 @@ footer {
     </div>
   </div>
 
-  <!-- APP MOCKUP -->
+  <!-- DEMO ANIMADA -->
   <div class="hero-mockup">
     <div class="mockup-glow"></div>
     <div class="mockup-frame">
       <div class="mockup-bar">
-        <div class="mockup-dots">
-          <span></span><span></span><span></span>
-        </div>
-        <div class="mockup-url">glyph.app · Designer Toolkit</div>
+        <div class="mockup-dots"><span></span><span></span><span></span></div>
+        <div class="mockup-url">app.glyph · Designer Toolkit</div>
       </div>
       <div class="mockup-body">
-        <div class="mini-app">
-          <div class="mini-sidebar">
-            <div class="mini-logo">
-              <div class="mini-dot"></div>
-              GLYPH
-            </div>
-            <div class="mini-nav-item active">✂️ &nbsp;Remover fondo</div>
-            <div class="mini-nav-item">🔬 &nbsp;Upscaler IA</div>
-            <div class="mini-nav-item">🔄 &nbsp;Convertir</div>
-            <div class="mini-nav-item">👕 &nbsp;Mockups</div>
+        <div class="demo-wrap">
+
+          <!-- SIDEBAR -->
+          <div class="demo-sidebar">
+            <div class="mini-logo"><div class="mini-dot"></div>GLYPH</div>
+            <div class="demo-nav-item" id="dnav-0">✂️ &nbsp;Remover fondo</div>
+            <div class="demo-nav-item" id="dnav-1">🔬 &nbsp;Upscaler IA</div>
+            <div class="demo-nav-item" id="dnav-2">🔄 &nbsp;Convertir</div>
           </div>
-          <div class="mini-main">
-            <div class="mini-upload">
-              <div class="mini-upload-icon">🖼️</div>
-              <div class="mini-upload-txt">Arrastrá tu imagen aquí</div>
-              <div class="mini-upload-sub">JPG · PNG · WEBP · MÁX 20MB</div>
-            </div>
-            <div class="mini-result-row">
-              <div class="mini-card">
-                <div class="mini-card-label">Original</div>
-                <div class="mini-img-placeholder">🖼️</div>
+
+          <!-- STEPS -->
+          <div class="demo-main">
+
+            <!-- STEP 0: upload -->
+            <div class="demo-step" id="dstep-0">
+              <div class="demo-step-label">Subí tu imagen</div>
+              <div class="demo-upload">
+                <div class="demo-upload-icon">🖼️</div>
+                <div class="demo-upload-name">remera_cliente.jpg</div>
+                <div class="demo-upload-bar"><div class="demo-upload-fill"></div></div>
+                <div class="demo-upload-sub">Cargando… 100%</div>
               </div>
-              <div class="mini-card">
-                <div class="mini-card-label">Sin fondo — IA</div>
-                <div class="mini-img-placeholder checker">✨</div>
-                <div class="mini-btn-row">
-                  <div class="mini-btn primary">⬇ Descargar</div>
-                  <div class="mini-btn ghost">↺ Nueva</div>
+            </div>
+
+            <!-- STEP 1: processing -->
+            <div class="demo-step" id="dstep-1" style="display:none">
+              <div class="demo-step-label">IA procesando…</div>
+              <div class="demo-processing">
+                <div class="demo-spin">⚙️</div>
+                <div class="demo-proc-txt">Removiendo fondo con IA</div>
+                <div class="demo-proc-dots"><span></span><span></span><span></span></div>
+              </div>
+            </div>
+
+            <!-- STEP 2: result -->
+            <div class="demo-step" id="dstep-2" style="display:none">
+              <div class="demo-step-label">¡Listo! — PNG sin fondo</div>
+              <div class="demo-result-row">
+                <div class="demo-card">
+                  <div class="mini-card-label">Original</div>
+                  <div class="demo-img-orig">🖼️</div>
+                </div>
+                <div class="demo-arrow">→</div>
+                <div class="demo-card">
+                  <div class="mini-card-label">Sin fondo ✓</div>
+                  <div class="demo-img-result checker-demo">✨</div>
                 </div>
               </div>
+              <div class="demo-actions">
+                <div class="demo-btn-dl">⬇ Descargar PNG</div>
+                <div class="demo-badge-ok">✓ Guardado</div>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -1636,7 +1809,47 @@ function toggleFaq(item) {
   if (!isOpen) item.classList.add('open');
 }
 
-// SMOOTH SCROLL for nav links
+// DEMO ANIMADA
+(function() {
+  const steps = [0, 1, 2];
+  const delays = [1800, 2200, 3500]; // ms en cada step
+  let current = 0;
+
+  function showStep(i) {
+    steps.forEach(s => {
+      const el = document.getElementById('dstep-' + s);
+      if (el) el.style.display = 'none';
+    });
+    const next = document.getElementById('dstep-' + i);
+    if (next) { next.style.display = ''; next.style.animation = 'none'; next.offsetHeight; next.style.animation = ''; }
+
+    // nav activo solo en step 0
+    document.querySelectorAll('.demo-nav-item').forEach((el, idx) => {
+      el.classList.toggle('active', idx === 0);
+    });
+  }
+
+  function runDemo() {
+    showStep(0);
+    let t = 0;
+    delays.forEach((d, i) => {
+      t += d;
+      setTimeout(() => showStep(i + 1 < steps.length ? i + 1 : 0), t);
+    });
+    // reiniciar ciclo
+    t += delays[delays.length - 1];
+    setTimeout(runDemo, t + 1000);
+  }
+
+  // Arrancar cuando el mockup sea visible
+  const mockup = document.querySelector('.hero-mockup');
+  if (mockup) {
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) { runDemo(); obs.disconnect(); }
+    }, { threshold: 0.3 });
+    obs.observe(mockup);
+  }
+})();
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     const target = document.querySelector(a.getAttribute('href'));
