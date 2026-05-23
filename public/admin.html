@@ -456,6 +456,10 @@ td.highlight { color: var(--text); }
       <span class="nav-icon">📋</span>
       <span>Actividad</span>
     </div>
+    <div class="nav-item" onclick="navigate('replicate', this)">
+      <span class="nav-icon">⚙️</span>
+      <span>Replicate</span>
+    </div>
   </nav>
   <div class="sidebar-footer">
     <div class="admin-user" id="adminEmail">—</div>
@@ -611,6 +615,68 @@ td.highlight { color: var(--text); }
                 Los logs de operaciones aparecerán aquí cuando agregues el registro de actividad al server.
               </div>
             </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ REPLICATE ══ -->
+  <div class="page" id="page-replicate">
+    <div class="page-title">Replicate <span>API</span></div>
+    <div class="page-sub">// HISTORIAL DE PREDICCIONES · DATOS EN TIEMPO REAL</div>
+
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+      <div class="stat-card" style="--c:var(--accent)">
+        <div class="stat-label">Total predicciones</div>
+        <div class="stat-value" id="rep-total">—</div>
+        <div class="stat-sub">últimas 100</div>
+      </div>
+      <div class="stat-card" style="--c:var(--success)">
+        <div class="stat-label">Completadas</div>
+        <div class="stat-value" id="rep-succeeded">—</div>
+        <div class="stat-sub">succeeded</div>
+      </div>
+      <div class="stat-card" style="--c:var(--danger)">
+        <div class="stat-label">Fallidas</div>
+        <div class="stat-value" id="rep-failed">—</div>
+        <div class="stat-sub">failed / canceled</div>
+      </div>
+      <div class="stat-card" style="--c:var(--purple)">
+        <div class="stat-label">Tiempo promedio</div>
+        <div class="stat-value" id="rep-avgtime" style="font-size:22px;margin-top:4px;">—</div>
+        <div class="stat-sub">segundos por predicción</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="card-header" style="padding:16px 20px">
+        <div class="card-title">Historial de predicciones</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="repFilter" onchange="filterReplicate()" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);outline:none">
+            <option value="">Todos los estados</option>
+            <option value="succeeded">✓ Completados</option>
+            <option value="failed">✕ Fallidos</option>
+            <option value="canceled">⊘ Cancelados</option>
+            <option value="processing">⟳ Procesando</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadReplicate()">↺ Actualizar</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Modelo</th>
+              <th>Estado</th>
+              <th>Duración</th>
+              <th>Creada</th>
+              <th>Completada</th>
+            </tr>
+          </thead>
+          <tbody id="repTable">
+            <tr><td colspan="6"><div class="loading"><div class="loading-dot"></div>Cargando...</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -918,8 +984,92 @@ window.toggleBlock = async (uid, email, isBlocked) => {
 };
 
 // ════════════════════════════════════════════════════════════════
-// TRANSACCIONES
+// REPLICATE
 // ════════════════════════════════════════════════════════════════
+let allPredictions = [];
+
+async function loadReplicate() {
+  const tbody = document.getElementById('repTable');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading"><div class="loading-dot"></div>Consultando API de Replicate...</div></td></tr>';
+
+  // El token lo obtenemos del server para no exponerlo en el cliente
+  const res = await api('/api/admin/replicate/predictions');
+
+  if (!res.success) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">⚠️</div>${res.error || 'Error al obtener predicciones'}</div></td></tr>`;
+    return;
+  }
+
+  allPredictions = res.predictions || [];
+  updateRepStats(allPredictions);
+  renderReplicate(allPredictions);
+}
+
+function updateRepStats(preds) {
+  const succeeded = preds.filter(p => p.status === 'succeeded').length;
+  const failed    = preds.filter(p => p.status === 'failed' || p.status === 'canceled').length;
+
+  const durations = preds
+    .filter(p => p.metrics?.predict_time)
+    .map(p => p.metrics.predict_time);
+  const avg = durations.length
+    ? (durations.reduce((a, b) => a + b, 0) / durations.length).toFixed(1)
+    : '—';
+
+  document.getElementById('rep-total').textContent     = preds.length;
+  document.getElementById('rep-succeeded').textContent = succeeded;
+  document.getElementById('rep-failed').textContent    = failed;
+  document.getElementById('rep-avgtime').textContent   = avg === '—' ? '—' : avg + 's';
+}
+
+function renderReplicate(preds) {
+  const tbody = document.getElementById('repTable');
+  if (!preds.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">⚙️</div>Sin predicciones encontradas</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = preds.map(p => {
+    const model    = p.model || (p.version ? p.version.slice(0, 24) + '…' : '—');
+    const dur      = p.metrics?.predict_time ? p.metrics.predict_time.toFixed(2) + 's' : '—';
+    const created  = p.created_at  ? fmtDate(p.created_at)   : '—';
+    const completed= p.completed_at? fmtDate(p.completed_at) : '—';
+
+    const statusBadge = {
+      succeeded: '<span class="badge badge-green">✓ succeeded</span>',
+      failed:    '<span class="badge badge-red">✕ failed</span>',
+      canceled:  '<span class="badge badge-yellow">⊘ canceled</span>',
+      processing:'<span class="badge badge-purple">⟳ processing</span>',
+      starting:  '<span class="badge badge-yellow">↑ starting</span>',
+    }[p.status] || `<span class="badge">${p.status}</span>`;
+
+    return `<tr>
+      <td class="highlight" style="font-size:10px">${p.id?.slice(0, 14)}…</td>
+      <td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${model}</td>
+      <td>${statusBadge}</td>
+      <td style="color:var(--accent)">${dur}</td>
+      <td>${created}</td>
+      <td>${completed}</td>
+    </tr>`;
+  }).join('');
+}
+
+window.filterReplicate = () => {
+  const val = document.getElementById('repFilter').value;
+  const filtered = val
+    ? allPredictions.filter(p => p.status === val)
+    : allPredictions;
+  renderReplicate(filtered);
+};
+
+window.loadReplicate = loadReplicate;
+
+// Cargar Replicate cuando se navega a esa sección
+const _origNavigate = window.navigate;
+window.navigate = (page, el) => {
+  _origNavigate(page, el);
+  if (page === 'replicate' && !allPredictions.length) loadReplicate();
+};
 async function loadTransactions() {
   const data = await api('/api/admin/transactions');
   const txs  = data.transactions || [];

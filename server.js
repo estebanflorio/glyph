@@ -637,6 +637,28 @@ app.get('/api/admin/transactions', requireAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/replicate/predictions — historial de predicciones de Replicate
+app.get('/api/admin/replicate/predictions', requireAdmin, async (req, res) => {
+  try {
+    const token = process.env.REPLICATE_API_TOKEN;
+    if (!token) return res.status(500).json({ success: false, error: 'REPLICATE_API_TOKEN no configurado en .env' });
+
+    const response = await fetch('https://api.replicate.com/v1/predictions', {
+      headers: { Authorization: `Token ${token}` }
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      return res.status(response.status).json({ success: false, error: err.detail || 'Error en API de Replicate' });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, predictions: data.results || [] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`
   ██████╗ ██╗   ██╗   ██╗██████╗ ██╗  ██╗
