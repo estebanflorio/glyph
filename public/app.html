@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-
-  const res    = await fetch('/api/firebase-config');
-  const config = await res.json();
-  const auth   = getAuth(initializeApp(config));
-
-  onAuthStateChanged(auth, user => {
-    if (!user) window.location.href = '/login';
-  });
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GLYPH — Designer Toolkit</title>
@@ -364,6 +352,54 @@
 
   .scale-btn:hover { border-color: var(--text2); color: var(--text); }
   .scale-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(200,241,53,0.05); }
+
+  /* ── GUEST HEADER BUTTONS ── */
+  .btn-guest-login {
+    padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text2); text-decoration: none;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    transition: border-color .2s, color .2s;
+  }
+  .btn-guest-login:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-guest-signup {
+    padding: 8px 18px; background: var(--accent); color: #0a0a0b;
+    border-radius: 8px; text-decoration: none;
+    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700;
+    transition: opacity .2s;
+  }
+  .btn-guest-signup:hover { opacity: .85; }
+
+  /* ── FREE TRIAL MODAL ── */
+  .free-trial-modal {
+    background: var(--surface); border: 1px solid rgba(200,241,53,.25);
+    border-radius: 20px; padding: 48px 40px;
+    max-width: 420px; width: 100%; text-align: center;
+    position: relative; animation: slideUp .35s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  .ftm-icon { font-size: 48px; margin-bottom: 16px; }
+  .ftm-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; letter-spacing: -.3px; }
+  .ftm-msg { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 12px; }
+  .ftm-sub { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); line-height: 1.6; margin-bottom: 28px; }
+  .ftm-sub strong { color: var(--accent); }
+  .ftm-cta {
+    display: block; padding: 14px 24px; background: var(--accent); color: #0a0a0b;
+    border-radius: 10px; font-family: 'DM Mono', monospace;
+    font-size: 13px; font-weight: 700; text-decoration: none;
+    margin-bottom: 12px; transition: opacity .2s;
+  }
+  .ftm-cta:hover { opacity: .85; }
+  .ftm-link {
+    display: block; font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--text3); text-decoration: none; transition: color .2s;
+  }
+  .ftm-link:hover { color: var(--text2); }
+  .modal-close-x {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none; color: var(--text3); font-size: 16px;
+    cursor: pointer; transition: color .2s;
+  }
+  .modal-close-x:hover { color: var(--text); }
 
   /* COMPARISON SLIDER */
   .comparison-wrap {
@@ -1646,7 +1682,8 @@ async function initFirebase() {
 
   onAuthStateChanged(auth, async user => {
     if (!user) {
-      window.location.href = '/login';
+      currentUser = null;
+      renderGuest();
       return;
     }
     currentUser = user;
@@ -1754,7 +1791,56 @@ function checkPaymentReturn() {
   }
 }
 
+// ── GUEST UI ──
+function renderGuest() {
+  const ha = document.getElementById('headerAuth');
+  ha.innerHTML = `
+    <a href="/login" class="btn-guest-login">Iniciar sesión</a>
+    <a href="/login?signup=1" class="btn-guest-signup">Crear cuenta gratis →</a>`;
+}
+
+// ── FREE TRIAL SUCCESS (después de procesar como invitado) ──
+function showFreeTrialSuccess(msg) {
+  const modal = document.getElementById('freeTrialModal');
+  if (!modal) return;
+  document.getElementById('freeTrialMsg').textContent =
+    msg || '¡Tu imagen fue procesada con IA!';
+  modal.classList.remove('hidden');
+}
+
+// ── FREE TRIAL ENDED (límite alcanzado) ──
+function showFreeTrialEnded() {
+  const modal = document.getElementById('freeTrialModal');
+  if (!modal) return;
+  document.getElementById('freeTrialMsg').textContent =
+    'Ya usaste tu prueba gratuita. Creá una cuenta gratis y empezá con 10 créditos.';
+  document.getElementById('freeTrialTitle').textContent = '¡Viste cómo funciona!';
+  modal.classList.remove('hidden');
+}
+
+function closeFreeTrialModal() {
+  document.getElementById('freeTrialModal').classList.add('hidden');
+}
+window.closeFreeTrialModal = closeFreeTrialModal;
+
 // ── INIT ──
 Promise.all([initFirebase(), initFingerprint()]).then(checkPaymentReturn);
 
 </script>
+<!-- ═══════════════════════════════════════
+     MODAL FREE TRIAL
+════════════════════════════════════════ -->
+<div id="freeTrialModal" class="modal-overlay hidden" onclick="if(event.target===this)closeFreeTrialModal()">
+  <div class="free-trial-modal">
+    <button class="modal-close-x" onclick="closeFreeTrialModal()">✕</button>
+    <div class="ftm-icon">✨</div>
+    <div class="ftm-title" id="freeTrialTitle">¡Funciona de verdad!</div>
+    <div class="ftm-msg" id="freeTrialMsg">Tu imagen fue procesada con IA en segundos.</div>
+    <div class="ftm-sub">Creá tu cuenta gratis y empezá con <strong>10 créditos</strong> — sin tarjeta, sin dólares.</div>
+    <a href="/login?signup=1" class="ftm-cta">Crear cuenta gratis →</a>
+    <a href="/login" class="ftm-link">Ya tengo cuenta — iniciar sesión</a>
+  </div>
+</div>
+
+</body>
+</html>
