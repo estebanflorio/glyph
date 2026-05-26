@@ -436,7 +436,7 @@ app.post('/api/upscale',
 
     try {
       const output = await replicate.run(
-        'prunaai/p-image-upscale',
+        'recraft-ai/recraft-crisp-upscale',
         { input: { image: toDataUri(req.file.buffer, req.file.mimetype), mode: 'factor', scale_factor: scale, enhance_realism: true } }
       );
       const url = Array.isArray(output) ? output[0] : String(output);
