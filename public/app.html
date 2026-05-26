@@ -1356,19 +1356,26 @@ async function handleBGFile(file) {
 
 async function downloadBgResult() {
   if (!state.bg.resultUrl) return;
-  // Fetch and download (handles CORS for replicate URLs)
+  const url = state.bg.resultUrl;
   try {
-    const res = await fetch(state.bg.resultUrl);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
+    let blob;
+    if (url.startsWith('data:')) {
+      const [header, b64] = url.split(',');
+      const mime = header.match(/:(.*?);/)[1];
+      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      blob = new Blob([bytes], { type: mime });
+    } else {
+      const res = await fetch(url);
+      blob = await res.blob();
+    }
+    const objUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
+    a.href = objUrl;
     a.download = 'sin-fondo.png';
     a.click();
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(objUrl);
   } catch {
-    // Fallback: open in new tab
-    window.open(state.bg.resultUrl, '_blank');
+    window.open(url, '_blank');
   }
 }
 
@@ -1470,18 +1477,28 @@ function getImageDimensions(src) {
 
 async function downloadUpscaled() {
   if (!state.upscale.resultUrl) return;
+  const url = state.upscale.resultUrl;
   try {
-    const res = await fetch(state.upscale.resultUrl);
-    const blob = await res.blob();
+    let blob;
+    if (url.startsWith('data:')) {
+      // Data URI — convertir a blob limpio sin hacer fetch
+      const [header, b64] = url.split(',');
+      const mime = header.match(/:(.*?);/)[1];
+      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      blob = new Blob([bytes], { type: mime });
+    } else {
+      const res = await fetch(url);
+      blob = await res.blob();
+    }
     const ext = blob.type.includes('png') ? 'png' : 'jpg';
-    const url = URL.createObjectURL(blob);
+    const objUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
+    a.href = objUrl;
     a.download = `upscaled-${selectedScale}x.${ext}`;
     a.click();
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(objUrl);
   } catch {
-    window.open(state.upscale.resultUrl, '_blank');
+    window.open(url, '_blank');
   }
 }
 
