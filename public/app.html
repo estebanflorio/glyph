@@ -994,7 +994,7 @@
 <div class="tool-panel" id="panel-upscale">
   <div class="panel-header">
     <div class="panel-title">Upscaler <span>IA</span></div>
-    <div class="panel-desc">// POWERED BY REPLICATE · prunaai/p-image-upscale · ~1 SEGUNDO · HASTA 8MP</div>
+    <div class="panel-desc">// POWERED BY REPLICATE · recraft-ai/recraft-crisp-upscale · ALTA FIDELIDAD · HASTA 8×</div>
   </div>
 
   <div class="scale-options">
@@ -1059,7 +1059,7 @@
           </tr>
           <tr>
             <td>Modelo</td>
-            <td colspan="2" class="val-accent2" style="text-align:center;font-size:10px;">p-image-upscale</td>
+            <td colspan="2" class="val-accent2" style="text-align:center;font-size:10px;">recraft-crisp-upscale</td>
           </tr>
         </tbody>
       </table>
@@ -1071,9 +1071,7 @@
   </div>
 
   <div class="info-box">
-    <strong>ℹ️ prunaai/p-image-upscale:</strong> El upscaler más rápido de Replicate (~1 segundo).
-    Soporta salida hasta <strong>8MP</strong>. Si tu imagen es muy grande, el navegador la optimiza
-    automáticamente antes de enviarla — sin instalar nada extra.
+    <strong>ℹ️ recraft-ai/recraft-crisp-upscale:</strong> Upscaler de alta fidelidad de Recraft. Preserva bordes, texto y detalles finos sin artefactos. Soporta escala hasta <strong>8×</strong>. Si tu imagen es muy grande, el navegador la optimiza automáticamente antes de enviarla — sin instalar nada extra.
     <strong>2×</strong> ideal para la mayoría de casos. <strong>4×</strong> para fotos pequeñas o íconos.
   </div>
 </div>
@@ -1441,7 +1439,7 @@ async function handleUpscaleFile(file) {
     if (wasTrimmed)
       showStatus('upscale', 'loading', `Imagen redimensionada para optimizar. Enviando a Replicate...`);
     else
-      showStatus('upscale', 'loading', `Enviando a prunaai/p-image-upscale...`);
+      showStatus('upscale', 'loading', `Enviando a recraft-crisp-upscale...`);
 
     const resultUrl = await callServer('/api/upscale', fileToSend, { scale: selectedScale });
 
