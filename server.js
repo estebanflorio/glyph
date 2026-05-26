@@ -439,7 +439,19 @@ app.post('/api/upscale',
         'recraft-ai/recraft-crisp-upscale',
         { input: { image: toDataUri(req.file.buffer, req.file.mimetype), mode: 'factor', scale_factor: scale, enhance_realism: true } }
       );
-      const url = Array.isArray(output) ? output[0] : String(output);
+
+      // Recraft devuelve FileOutput (ReadableStream), no una URL — convertimos a base64
+      let url;
+      const raw = Array.isArray(output) ? output[0] : output;
+      if (raw && typeof raw === 'object' && typeof raw[Symbol.asyncIterator] === 'function') {
+        const chunks = [];
+        for await (const chunk of raw) {
+          chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, 'binary') : chunk);
+        }
+        url = `data:image/png;base64,${Buffer.concat(chunks).toString('base64')}`;
+      } else {
+        url = String(raw);
+      }
       console.log(`[upscale] ✓`);
       res.json({
         success:  true,
