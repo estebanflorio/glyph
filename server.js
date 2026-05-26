@@ -448,7 +448,12 @@ app.post('/api/upscale',
         for await (const chunk of raw) {
           chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, 'binary') : chunk);
         }
-        url = `data:image/png;base64,${Buffer.concat(chunks).toString('base64')}`;
+        const buf = Buffer.concat(chunks);
+        // Detectar MIME real por magic bytes en vez de asumir PNG
+        let mime = 'image/png';
+        if (buf[0] === 0xFF && buf[1] === 0xD8) mime = 'image/jpeg';
+        else if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46) mime = 'image/webp';
+        url = `data:${mime};base64,${buf.toString('base64')}`;
       } else {
         url = String(raw);
       }
