@@ -1356,22 +1356,27 @@ async function downloadBgResult() {
   if (!state.bg.resultUrl) return;
   const url = state.bg.resultUrl;
   try {
-    let blob;
-    if (url.startsWith('data:')) {
-      const [header, b64] = url.split(',');
-      const mime = header.match(/:(.*?);/)[1];
-      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-      blob = new Blob([bytes], { type: mime });
-    } else {
-      const res = await fetch(url);
-      blob = await res.blob();
-    }
-    const objUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = objUrl;
-    a.download = 'sin-fondo.png';
-    a.click();
-    URL.revokeObjectURL(objUrl);
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    await new Promise((resolve, reject) => {
+      img.onload  = resolve;
+      img.onerror = reject;
+      img.src = url;
+    });
+    const canvas  = document.createElement('canvas');
+    canvas.width  = img.naturalWidth  || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    canvas.toBlob(blob => {
+      const objUrl = URL.createObjectURL(blob);
+      const a      = document.createElement('a');
+      a.href        = objUrl;
+      a.download    = 'glyph-sin-fondo.png';
+      a.click();
+      URL.revokeObjectURL(objUrl);
+    }, 'image/png');
   } catch {
     window.open(url, '_blank');
   }
@@ -1476,27 +1481,47 @@ function getImageDimensions(src) {
 async function downloadUpscaled() {
   if (!state.upscale.resultUrl) return;
   const url = state.upscale.resultUrl;
+
   try {
-    let blob;
-    if (url.startsWith('data:')) {
-      // Data URI — convertir a blob limpio sin hacer fetch
-      const [header, b64] = url.split(',');
-      const mime = header.match(/:(.*?);/)[1];
-      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-      blob = new Blob([bytes], { type: mime });
-    } else {
-      const res = await fetch(url);
-      blob = await res.blob();
-    }
-    const ext = blob.type.includes('png') ? 'png' : 'jpg';
-    const objUrl = URL.createObjectURL(blob);
+    // Cargar la imagen en un canvas para limpiarla y re-exportarla
+    // Esto soluciona el problema de JPGs corruptos en Photoshop/Illustrator
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    await new Promise((resolve, reject) => {
+      img.onload  = resolve;
+      img.onerror = reject;
+      img.src = url;
+    });
+
+    const canvas  = document.createElement('canvas');
+    canvas.width  = img.naturalWidth  || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo blanco para JPG (evita canal alfa inválido)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+
+    // Exportar como PNG para máxima compatibilidad con Photoshop
+    canvas.toBlob(blob => {
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href     = objUrl;
+      a.download = `glyph-upscaled-${selectedScale}x.png`;
+      a.click();
+      URL.revokeObjectURL(objUrl);
+    }, 'image/png');
+
+  } catch (err) {
+    console.warn('Canvas download falló, descargando directo:', err);
+    // Fallback: descarga directa
     const a = document.createElement('a');
-    a.href = objUrl;
-    a.download = `upscaled-${selectedScale}x.${ext}`;
+    a.href     = url;
+    a.download = `glyph-upscaled-${selectedScale}x.png`;
+    a.target   = '_blank';
     a.click();
-    URL.revokeObjectURL(objUrl);
-  } catch {
-    window.open(url, '_blank');
   }
 }
 
