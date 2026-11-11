@@ -116,6 +116,7 @@ body::before {
 /* ── MAIN ── */
 .main {
   margin-left: 220px;
+  min-width: 0;
   flex: 1; padding: 32px 40px;
   position: relative; z-index: 1;
   min-height: 100vh;
@@ -369,12 +370,77 @@ td.highlight { color: var(--text); }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+.mobile-topbar { display: none; }
+
 @media (max-width: 768px) {
-  .sidebar { width: 60px; }
-  .sidebar-logo span, .sidebar-tag, .nav-item span:not(.nav-icon), .admin-user, .btn-logout { display: none; }
-  .nav-item { justify-content: center; padding: 12px; }
-  .main { margin-left: 60px; padding: 20px; }
-  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  html, body { overflow-x: hidden; max-width: 100%; }
+  body { display: block; }
+
+  /* Sidebar → barra inferior fija */
+  .sidebar {
+    width: 100%; min-height: 0; height: auto;
+    top: auto; bottom: 0; left: 0; right: 0;
+    flex-direction: row;
+    border-right: none; border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    z-index: 50;
+  }
+  .sidebar-logo, .sidebar-footer { display: none; }
+  .sidebar-nav { display: flex; flex: 1; padding: 0; }
+  .nav-item {
+    flex: 1; flex-direction: column; justify-content: center;
+    gap: 3px; padding: 9px 4px;
+    font-size: 9px; letter-spacing: .3px; text-align: center;
+    border-left: none; border-top: 2px solid transparent;
+  }
+  .nav-item.active { border-left-color: transparent; border-top-color: var(--accent); }
+  .nav-item .nav-icon { font-size: 18px; }
+
+  /* Contenido */
+  .main { margin-left: 0; width: 100%; min-width: 0; padding: 14px 14px 96px; }
+  .mobile-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 18px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mt-brand { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; }
+  .mt-actions { display: flex; gap: 8px; }
+  .mt-btn {
+    padding: 7px 12px; background: var(--s2); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text2); text-decoration: none; cursor: pointer;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+  }
+  .page-title { font-size: 24px; }
+  .page-sub { font-size: 10px; margin-bottom: 20px; }
+
+  .stats-grid, .stats-grid.stats-3 { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .stat-card { padding: 14px; min-width: 0; }
+  .stat-value { font-size: 22px; word-break: break-word; }
+  .dash-cols { grid-template-columns: 1fr !important; }
+  .card { padding: 16px; }
+  .search-bar { flex-wrap: wrap; }
+  .search-input { min-width: 0; }
+
+  /* Tablas → tarjetas apiladas */
+  .table-wrap { overflow-x: visible; }
+  table.stack, table.stack tbody, table.stack tr, table.stack td { display: block; width: 100%; }
+  table.stack thead { display: none; }
+  table.stack tr { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  table.stack td {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; padding: 5px 0; text-align: right; word-break: break-all;
+  }
+  table.stack td::before {
+    content: attr(data-label); flex-shrink: 0; text-align: left;
+    color: var(--text3); font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  }
+  table.stack td.actions-td { flex-direction: column; align-items: stretch; text-align: left; }
+  table.stack td.actions-td::before { margin-bottom: 6px; }
+
+  /* Modales y toast */
+  .modal-overlay { padding: 12px; align-items: flex-start; overflow-y: auto; }
+  .modal { padding: 22px 18px; margin: auto; }
+  .toast { bottom: 84px; right: 12px; left: 12px; }
 }
 </style>
 </head>
@@ -456,10 +522,6 @@ td.highlight { color: var(--text); }
       <span class="nav-icon">📋</span>
       <span>Actividad</span>
     </div>
-    <div class="nav-item" onclick="navigate('replicate', this)">
-      <span class="nav-icon">⚙️</span>
-      <span>Replicate</span>
-    </div>
   </nav>
   <div class="sidebar-footer">
     <div class="admin-user" id="adminEmail">—</div>
@@ -470,6 +532,15 @@ td.highlight { color: var(--text); }
 
 <!-- MAIN -->
 <main class="main">
+
+  <!-- Barra superior (solo mobile) -->
+  <div class="mobile-topbar">
+    <div class="mt-brand"><div class="logo-dot"></div> GLYPH <span class="sidebar-tag" style="display:inline-block">ADMIN</span></div>
+    <div class="mt-actions">
+      <a href="/app" class="mt-btn">← App</a>
+      <button class="mt-btn" onclick="logout()">Salir</button>
+    </div>
+  </div>
 
   <!-- ══ DASHBOARD ══ -->
   <div class="page active" id="page-dashboard">
@@ -499,7 +570,7 @@ td.highlight { color: var(--text); }
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="dash-cols" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
       <div class="card">
         <div class="card-header">
           <div class="card-title">Últimos usuarios</div>
@@ -529,7 +600,7 @@ td.highlight { color: var(--text); }
 
     <div class="card" style="padding:0;overflow:hidden">
       <div class="table-wrap">
-        <table>
+        <table class="stack">
           <thead>
             <tr>
               <th>Email</th>
@@ -552,7 +623,7 @@ td.highlight { color: var(--text); }
     <div class="page-title">Historial de <span>pagos</span></div>
     <div class="page-sub">// TODAS LAS TRANSACCIONES DE MERCADOPAGO</div>
 
-    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+    <div class="stats-grid stats-3" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
       <div class="stat-card" style="--c:var(--success)">
         <div class="stat-label">Este mes</div>
         <div class="stat-value" id="tx-month">—</div>
@@ -572,7 +643,7 @@ td.highlight { color: var(--text); }
 
     <div class="card" style="padding:0;overflow:hidden">
       <div class="table-wrap">
-        <table>
+        <table class="stack">
           <thead>
             <tr>
               <th>Usuario</th>
@@ -598,7 +669,7 @@ td.highlight { color: var(--text); }
 
     <div class="card" style="padding:0;overflow:hidden">
       <div class="table-wrap">
-        <table>
+        <table class="stack">
           <thead>
             <tr>
               <th>Usuario</th>
@@ -615,68 +686,6 @@ td.highlight { color: var(--text); }
                 Los logs de operaciones aparecerán aquí cuando agregues el registro de actividad al server.
               </div>
             </td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ REPLICATE ══ -->
-  <div class="page" id="page-replicate">
-    <div class="page-title">Replicate <span>API</span></div>
-    <div class="page-sub">// HISTORIAL DE PREDICCIONES · DATOS EN TIEMPO REAL</div>
-
-    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
-      <div class="stat-card" style="--c:var(--accent)">
-        <div class="stat-label">Total predicciones</div>
-        <div class="stat-value" id="rep-total">—</div>
-        <div class="stat-sub">últimas 100</div>
-      </div>
-      <div class="stat-card" style="--c:var(--success)">
-        <div class="stat-label">Completadas</div>
-        <div class="stat-value" id="rep-succeeded">—</div>
-        <div class="stat-sub">succeeded</div>
-      </div>
-      <div class="stat-card" style="--c:var(--danger)">
-        <div class="stat-label">Fallidas</div>
-        <div class="stat-value" id="rep-failed">—</div>
-        <div class="stat-sub">failed / canceled</div>
-      </div>
-      <div class="stat-card" style="--c:var(--purple)">
-        <div class="stat-label">Tiempo promedio</div>
-        <div class="stat-value" id="rep-avgtime" style="font-size:22px;margin-top:4px;">—</div>
-        <div class="stat-sub">segundos por predicción</div>
-      </div>
-    </div>
-
-    <div class="card" style="padding:0;overflow:hidden">
-      <div class="card-header" style="padding:16px 20px">
-        <div class="card-title">Historial de predicciones</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select id="repFilter" onchange="filterReplicate()" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);outline:none">
-            <option value="">Todos los estados</option>
-            <option value="succeeded">✓ Completados</option>
-            <option value="failed">✕ Fallidos</option>
-            <option value="canceled">⊘ Cancelados</option>
-            <option value="processing">⟳ Procesando</option>
-          </select>
-          <button class="btn btn-ghost btn-sm" onclick="loadReplicate()">↺ Actualizar</button>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Modelo</th>
-              <th>Estado</th>
-              <th>Duración</th>
-              <th>Creada</th>
-              <th>Completada</th>
-            </tr>
-          </thead>
-          <tbody id="repTable">
-            <tr><td colspan="6"><div class="loading"><div class="loading-dot"></div>Cargando...</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -841,20 +850,20 @@ function renderUsers(users) {
 
   tbody.innerHTML = users.map(u => `
     <tr>
-      <td class="highlight">${u.email}</td>
-      <td>
+      <td class="highlight" data-label="Email">${u.email}</td>
+      <td data-label="Créditos">
         <span style="color:var(--accent);font-weight:600">
           ${u.isAdmin ? '∞' : fmt(u.credits)}
         </span>
         ${u.isAdmin ? ' <span class="badge badge-purple">ADMIN</span>' : ''}
       </td>
-      <td>
+      <td data-label="Estado">
         ${u.blocked
           ? '<span class="badge badge-red">BLOQUEADO</span>'
           : '<span class="badge badge-green">ACTIVO</span>'}
       </td>
-      <td>${fmtDate(u.createdAt)}</td>
-      <td>
+      <td data-label="Registro">${fmtDate(u.createdAt)}</td>
+      <td data-label="Acciones" class="actions-td">
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn btn-sm btn-purple" onclick="openCreditsModal('${u.uid}','${u.email}',${u.credits})">⚡ Créditos</button>
           <button class="btn btn-sm btn-ghost" onclick="openUserModal('${u.uid}')">👁 Ver</button>
@@ -984,92 +993,8 @@ window.toggleBlock = async (uid, email, isBlocked) => {
 };
 
 // ════════════════════════════════════════════════════════════════
-// REPLICATE
+// TRANSACCIONES
 // ════════════════════════════════════════════════════════════════
-let allPredictions = [];
-
-async function loadReplicate() {
-  const tbody = document.getElementById('repTable');
-  tbody.innerHTML = '<tr><td colspan="6"><div class="loading"><div class="loading-dot"></div>Consultando API de Replicate...</div></td></tr>';
-
-  // El token lo obtenemos del server para no exponerlo en el cliente
-  const res = await api('/api/admin/replicate/predictions');
-
-  if (!res.success) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">⚠️</div>${res.error || 'Error al obtener predicciones'}</div></td></tr>`;
-    return;
-  }
-
-  allPredictions = res.predictions || [];
-  updateRepStats(allPredictions);
-  renderReplicate(allPredictions);
-}
-
-function updateRepStats(preds) {
-  const succeeded = preds.filter(p => p.status === 'succeeded').length;
-  const failed    = preds.filter(p => p.status === 'failed' || p.status === 'canceled').length;
-
-  const durations = preds
-    .filter(p => p.metrics?.predict_time)
-    .map(p => p.metrics.predict_time);
-  const avg = durations.length
-    ? (durations.reduce((a, b) => a + b, 0) / durations.length).toFixed(1)
-    : '—';
-
-  document.getElementById('rep-total').textContent     = preds.length;
-  document.getElementById('rep-succeeded').textContent = succeeded;
-  document.getElementById('rep-failed').textContent    = failed;
-  document.getElementById('rep-avgtime').textContent   = avg === '—' ? '—' : avg + 's';
-}
-
-function renderReplicate(preds) {
-  const tbody = document.getElementById('repTable');
-  if (!preds.length) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">⚙️</div>Sin predicciones encontradas</div></td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = preds.map(p => {
-    const model    = p.model || (p.version ? p.version.slice(0, 24) + '…' : '—');
-    const dur      = p.metrics?.predict_time ? p.metrics.predict_time.toFixed(2) + 's' : '—';
-    const created  = p.created_at  ? fmtDate(p.created_at)   : '—';
-    const completed= p.completed_at? fmtDate(p.completed_at) : '—';
-
-    const statusBadge = {
-      succeeded: '<span class="badge badge-green">✓ succeeded</span>',
-      failed:    '<span class="badge badge-red">✕ failed</span>',
-      canceled:  '<span class="badge badge-yellow">⊘ canceled</span>',
-      processing:'<span class="badge badge-purple">⟳ processing</span>',
-      starting:  '<span class="badge badge-yellow">↑ starting</span>',
-    }[p.status] || `<span class="badge">${p.status}</span>`;
-
-    return `<tr>
-      <td class="highlight" style="font-size:10px">${p.id?.slice(0, 14)}…</td>
-      <td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${model}</td>
-      <td>${statusBadge}</td>
-      <td style="color:var(--accent)">${dur}</td>
-      <td>${created}</td>
-      <td>${completed}</td>
-    </tr>`;
-  }).join('');
-}
-
-window.filterReplicate = () => {
-  const val = document.getElementById('repFilter').value;
-  const filtered = val
-    ? allPredictions.filter(p => p.status === val)
-    : allPredictions;
-  renderReplicate(filtered);
-};
-
-window.loadReplicate = loadReplicate;
-
-// Cargar Replicate cuando se navega a esa sección
-const _origNavigate = window.navigate;
-window.navigate = (page, el) => {
-  _origNavigate(page, el);
-  if (page === 'replicate' && !allPredictions.length) loadReplicate();
-};
 async function loadTransactions() {
   const data = await api('/api/admin/transactions');
   const txs  = data.transactions || [];
@@ -1101,12 +1026,12 @@ async function loadTransactions() {
 
   tbody.innerHTML = txs.map(t => `
     <tr>
-      <td class="highlight">${t.uid?.slice(0,8)}...</td>
-      <td><span class="badge ${t.plan==='studio'?'badge-purple':t.plan==='pro'?'badge-green':'badge-yellow'}">${t.plan?.toUpperCase()||'—'}</span></td>
-      <td style="color:var(--accent)">+${fmt(t.credits)}</td>
-      <td style="color:var(--success);font-weight:600">$${fmt(t.amount)}</td>
-      <td style="color:var(--text3);font-size:10px">${t.paymentId?.slice(0,12)}...</td>
-      <td>${fmtDate(t.createdAt)}</td>
+      <td class="highlight" data-label="Usuario">${t.uid?.slice(0,8)}...</td>
+      <td data-label="Plan"><span class="badge ${t.plan==='studio'?'badge-purple':t.plan==='pro'?'badge-green':'badge-yellow'}">${t.plan?.toUpperCase()||'—'}</span></td>
+      <td style="color:var(--accent)" data-label="Créditos">+${fmt(t.credits)}</td>
+      <td style="color:var(--success);font-weight:600" data-label="Monto">$${fmt(t.amount)}</td>
+      <td style="color:var(--text3);font-size:10px" data-label="Payment ID">${t.paymentId?.slice(0,12)}...</td>
+      <td data-label="Fecha">${fmtDate(t.createdAt)}</td>
     </tr>
   `).join('');
 }
