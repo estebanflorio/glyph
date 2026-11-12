@@ -683,7 +683,7 @@ td.highlight { color: var(--text); }
             <tr><td colspan="5">
               <div class="empty">
                 <div class="empty-icon">📋</div>
-                Los logs de operaciones aparecerán aquí cuando agregues el registro de actividad al server.
+                Cargando actividad...
               </div>
             </td></tr>
           </tbody>
@@ -746,6 +746,7 @@ onAuthStateChanged(fbAuth, async user => {
   loadDashboard();
   loadUsers();
   loadTransactions();
+  loadLogs();
 });
 
 // ── HELPERS ────────────────────────────────────────────────
@@ -785,6 +786,7 @@ window.navigate = (page, el) => {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   el.classList.add('active');
+  if (page === 'logs') loadLogs();
 };
 
 window.logout = async () => {
@@ -924,7 +926,7 @@ window.openUserModal = async (uid) => {
 
   const res = await api('/api/admin/user/' + uid);
   if (!res.success) {
-    document.getElementById('userModalContent').innerHTML = '<p style="color:var(--danger);font-family:DM Mono,monospace;font-size:12px">Error al cargar usuario</p>';
+    document.getElementById('userModalContent').innerHTML = '<p style="color:var(--danger);font-family:DM Mono,monospace;font-size:12px">Error al cargar usuario' + (res.error ? ': ' + res.error : '') + '</p>';
     return;
   }
 
@@ -991,6 +993,35 @@ window.toggleBlock = async (uid, email, isBlocked) => {
     showToast('Error: ' + res.error, 'err');
   }
 };
+
+// ════════════════════════════════════════════════════════════════
+// ACTIVIDAD (operaciones de IA)
+// ════════════════════════════════════════════════════════════════
+async function loadLogs() {
+  const data  = await api('/api/admin/operations');
+  const ops   = data.operations || [];
+  const tbody = document.getElementById('logsTable');
+
+  if (!ops.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div>Todavía no hay operaciones registradas.</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = ops.map(o => {
+    const name = o.type === 'upscale' ? '🔬 Upscaler' : '✂️ Quitar fondo';
+    const cost = o.guest ? 'invitado' : (o.admin ? 'admin' : (o.credits || 0));
+    return `
+    <tr>
+      <td class="highlight" data-label="Usuario">${o.email || '—'}</td>
+      <td data-label="Operación">${name}</td>
+      <td style="color:var(--accent)" data-label="Créditos">${cost}</td>
+      <td data-label="Estado">${o.status === 'ok'
+        ? '<span class="badge badge-green">OK</span>'
+        : '<span class="badge badge-red">ERROR</span>'}</td>
+      <td data-label="Fecha">${fmtDate(o.createdAt)}</td>
+    </tr>`;
+  }).join('');
+}
 
 // ════════════════════════════════════════════════════════════════
 // TRANSACCIONES

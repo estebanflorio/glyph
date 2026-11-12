@@ -1,3 +1,4 @@
+import { operationLogger, registerAccountRoutes } from './middleware/account.js';
 import 'dotenv/config';
 import express from 'express';
 import Replicate from 'replicate';
@@ -244,6 +245,7 @@ const toDataUri = (buf, mime) =>
 
 // Costo en créditos por operación
 const COSTS = { 'remove-bg': 2, 'upscale': 2 };
+app.use(operationLogger({ db, FieldValue, COSTS }));
 
 // ─── AUTH MIDDLEWARE ──────────────────────────────────────────
 async function requireAuth(req, res, next) {
@@ -565,17 +567,18 @@ app.get('/api/admin/user/:uid', requireAdmin, async (req, res) => {
     const { uid } = req.params;
     const [userSnap, txSnap] = await Promise.all([
       db.collection('users').doc(uid).get(),
-      db.collection('transactions').where('uid', '==', uid).orderBy('createdAt', 'desc').get(),
+      db.collection('transactions').where('uid', '==', uid).get(),
     ]);
 
     if (!userSnap.exists) return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
 
-    res.json({
-      success:      true,
-      user:         { uid, ...userSnap.data() },
-      transactions: txSnap.docs.map(d => d.data()),
-    });
+    const transactions = txSnap.docs
+      .map(d => d.data())
+      .sort((a, b) => (b.createdAt?._seconds || 0) - (a.createdAt?._seconds || 0));
+
+    res.json({ success: true, user: { uid, ...userSnap.data() }, transactions });
   } catch (err) {
+    console.error('[admin/user]', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -676,6 +679,7 @@ app.get('/api/admin/replicate/predictions', requireAdmin, async (req, res) => {
   }
 });
 
+registerAccountRoutes(app, { db, requireAuth, requireAdmin });
 app.listen(port, () => {
   console.log(`
   ██████╗ ██╗   ██╗   ██╗██████╗ ██╗  ██╗

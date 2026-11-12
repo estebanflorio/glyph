@@ -865,6 +865,58 @@
     border-color: rgba(124,106,247,0.5);
   }
 
+
+  /* ── MODAL PLANES — RESPONSIVE ── */
+  .modal-overlay { overflow-y: auto; align-items: flex-start; }
+  .modal-box { margin: auto; max-height: none; }
+  .planes-grid > * { min-width: 0; }
+
+  @media (max-width: 640px) {
+    .modal-overlay { padding: 12px; }
+    .modal-box { padding: 24px 18px; border-radius: 14px; }
+    .modal-title { font-size: 22px; padding-right: 40px; }
+    .modal-sub { margin-bottom: 20px; line-height: 1.5; }
+    .planes-grid { grid-template-columns: 1fr; gap: 14px; }
+    .plan-card {
+      display: grid; grid-template-columns: 1fr auto;
+      grid-template-areas: "name btn" "credits btn" "label btn" "price btn" "usd btn";
+      column-gap: 14px; text-align: left; padding: 16px;
+    }
+    .plan-card .plan-name { grid-area: name; margin-bottom: 4px; }
+    .plan-card .plan-credits { grid-area: credits; font-size: 26px; }
+    .plan-card .plan-credits-label { grid-area: label; margin-bottom: 8px; }
+    .plan-card .plan-price { grid-area: price; }
+    .plan-card .plan-usd { grid-area: usd; margin-bottom: 0; }
+    .plan-card .plan-btn { grid-area: btn; align-self: center; width: auto; padding: 12px 18px; }
+    .plan-card.popular { margin-top: 6px; }
+    .modal-ops { gap: 8px 12px; }
+  }
+
+  /* ── RESPONSIVE MOBILE (header + paneles) ── */
+  html, body { overflow-x: hidden; max-width: 100%; }
+  .header-auth { flex-wrap: wrap; justify-content: flex-end; }
+
+  @media (max-width: 640px) {
+    header { padding: 12px 14px; gap: 10px; }
+    .logo { font-size: 20px; }
+    .header-auth { flex: 1; min-width: 0; gap: 6px; }
+    .credits-badge, .user-btn, .admin-btn, .login-btn { padding: 6px 10px; font-size: 11px; }
+    .credits-badge .credit-label { display: none; }
+    .user-btn { min-width: 0; }
+    .user-btn span:nth-child(3) { display: none; }
+    .user-btn span:nth-child(2) { max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .nav-tabs { order: 3; width: 100%; overflow-x: auto; scrollbar-width: none; }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    .nav-tab { flex: 1 0 auto; justify-content: center; padding: 9px 10px; font-size: 11px; gap: 5px; }
+
+    main { padding: 18px 14px 40px; }
+    .panel-title { font-size: 26px; }
+    .panel-desc { font-size: 10px; line-height: 1.5; word-break: break-word; }
+    .upload-zone { padding: 32px 16px; }
+    .actions-row .btn { flex: 1 1 auto; }
+    .info-box { font-size: 10px; }
+  }
 </style>
 </head>
 <body>
@@ -897,7 +949,7 @@
   <div class="modal-box">
     <button class="modal-close" onclick="closePlanesModal()">✕</button>
     <div class="modal-title">Cargar <span>créditos</span></div>
-    <div class="modal-sub">// CADA OPERACIÓN CONSUME 2 CRÉDITOS · CONVERSIÓN GRATIS · MOCKUPS 1 CRÉDITO</div>
+    <div class="modal-sub">// CADA OPERACIÓN DE IA CONSUME 2 CRÉDITOS · CONVERSIÓN GRATIS</div>
 
     <div class="planes-grid">
       <div class="plan-card" onclick="comprarPlan('starter')">
@@ -929,8 +981,7 @@
     <div class="modal-ops">
       ✂️ Remove BG <span>2 créditos</span> &nbsp;·&nbsp;
       🔬 Upscaler <span>2 créditos</span> &nbsp;·&nbsp;
-      🔄 Conversor <span>gratis</span> &nbsp;·&nbsp;
-
+      🔄 Conversor <span>gratis</span>
     </div>
   </div>
 </div>
@@ -1754,11 +1805,11 @@ function renderLoggedIn({ email, credits, isAdmin }) {
       <span class="credit-num">${isAdmin ? '∞' : credits}</span>
       <span class="credit-label">${isAdmin ? 'ADMIN' : 'CRÉDITOS'}</span>
     </div>
-    <div class="user-btn" onclick="logout()">
+    <a href="/cuenta" class="user-btn" title="Mi cuenta" style="text-decoration:none">
       <span>👤</span>
       <span>${email.split('@')[0]}</span>
-      <span style="color:var(--text3)">· salir</span>
-    </div>`;
+      <span style="color:var(--text3)">· mi cuenta</span>
+    </a>`;
 }
 
 function updateCreditsDisplay(credits) {
@@ -1820,6 +1871,10 @@ async function getAuthToken() {
 // ── Verificar pago al volver de MP ──
 function checkPaymentReturn() {
   const params = new URLSearchParams(window.location.search);
+  if (params.get('comprar') === '1') {
+    window.history.replaceState({}, '', '/app');
+    setTimeout(() => { if (typeof openPlanesModal === 'function') openPlanesModal(); }, 700);
+  }
   if (params.get('pago') === 'ok') {
     const plan = params.get('plan') || '';
     showToast(`✓ Pago aprobado${plan ? ' · plan ' + plan : ''} — créditos acreditados`, 'success');

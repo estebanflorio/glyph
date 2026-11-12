@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLYPH — Mi cuenta</title>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0b; --s1: #111113; --s2: #18181c; --s3: #222228;
+  --border: #2a2a32; --accent: #c8f135; --purple: #7c6af7;
+  --text: #e8e8ec; --text2: #8888a0; --text3: #444458;
+  --danger: #ff4757; --success: #2ed573;
+}
+
+html, body { overflow-x: hidden; max-width: 100%; }
+
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Syne', sans-serif; min-height: 100vh;
+}
+
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px; opacity: 0.15;
+}
+
+/* ── HEADER ── */
+.top {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+  background: rgba(10,10,11,.9); backdrop-filter: blur(12px);
+}
+.brand {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none;
+}
+.dot {
+  width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent); animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.7); } }
+
+.pill {
+  padding: 8px 14px; background: var(--s2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text2); text-decoration: none; cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .5px;
+  transition: all .2s;
+}
+.pill:hover { color: var(--text); border-color: var(--text2); }
+
+/* ── LAYOUT ── */
+.wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
+
+.title { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 8px; }
+.title span { color: var(--accent); }
+.sub {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3);
+  letter-spacing: 1px; margin-bottom: 24px; word-break: break-all;
+}
+
+.card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px; margin-bottom: 16px;
+}
+.label {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3);
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;
+}
+
+/* ── SALDO ── */
+.hero { position: relative; overflow: hidden; }
+.hero::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent);
+}
+.big { font-size: 56px; font-weight: 800; letter-spacing: -2px; color: var(--accent); line-height: 1; }
+.hint { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2); margin: 8px 0 18px; line-height: 1.5; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 18px; border-radius: 8px; cursor: pointer; text-decoration: none;
+  font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: .5px;
+  background: transparent; color: var(--text2); border: 1px solid var(--border); transition: all .2s;
+}
+.btn:hover { color: var(--text); border-color: var(--text2); }
+.btn.primary { background: var(--accent); color: #0a0a0b; border-color: var(--accent); font-weight: 700; }
+.btn.primary:hover { background: #d4f545; }
+.btn.danger:hover { color: var(--danger); border-color: var(--danger); }
+.btn[hidden] { display: none; }
+
+/* ── STATS ── */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat { background: var(--s1); border: 1px solid var(--border); border-radius: 12px; padding: 16px; min-width: 0; }
+.stat .v { font-size: 24px; font-weight: 800; letter-spacing: -1px; word-break: break-word; }
+.stat .k { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 6px; }
+
+/* ── LISTAS ── */
+.item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid rgba(42,42,50,.7);
+}
+.item:last-child { border-bottom: none; }
+.item .l { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.item .ic {
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 8px;
+  background: var(--s2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.item .n { font-size: 14px; font-weight: 600; }
+.item .d { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 3px; }
+.item .r { text-align: right; flex-shrink: 0; }
+.item .a { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+.a.green { color: var(--success); }
+.a.lime { color: var(--accent); }
+.a.muted { color: var(--text3); }
+.badge {
+  display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 20px;
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1px;
+}
+.badge.ok { background: rgba(46,213,115,.1); color: var(--success); border: 1px solid rgba(46,213,115,.2); }
+.badge.err { background: rgba(255,71,87,.1); color: var(--danger); border: 1px solid rgba(255,71,87,.2); }
+
+.empty { text-align: center; padding: 28px 8px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); line-height: 1.6; }
+
+.prices { display: flex; flex-direction: column; gap: 0; }
+.prices .item .a { color: var(--accent); }
+
+.loading { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); padding: 40px 0; text-align: center; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 80px); opacity: 0; z-index: 50;
+  padding: 12px 18px; max-width: calc(100% - 32px);
+  background: var(--s1); border: 1px solid var(--border); border-radius: 8px;
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4); transition: all .3s;
+}
+.toast.show { transform: translate(-50%, 0); opacity: 1; }
+.toast.ok { border-color: rgba(46,213,115,.4); }
+.toast.err { border-color: rgba(255,71,87,.4); }
+
+@media (max-width: 560px) {
+  .top { padding: 12px 14px; }
+  .wrap { padding: 22px 14px 56px; }
+  .title { font-size: 26px; }
+  .big { font-size: 46px; }
+  .card { padding: 18px 16px; }
+  .row .btn { flex: 1 1 100%; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a href="/" class="brand"><div class="dot"></div> GLYPH</a>
+  <a href="/app" class="pill">← Volver a la app</a>
+</header>
+
+<main class="wrap">
+  <h1 class="title">Mi <span>cuenta</span></h1>
+  <p class="sub" id="email">// cargando...</p>
+
+  <div id="content"><div class="loading">Cargando tu cuenta...</div></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+const { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail }
+  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+
+const cfg    = await fetch('/api/firebase-config').then(r => r.json());
+const fbAuth = getAuth(initializeApp(cfg));
+
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n || 0).toLocaleString('es-AR');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
+function fmtDate(ts, withTime = true) {
+  if (!ts) return '—';
+  const d = ts._seconds ? new Date(ts._seconds * 1000) : new Date(ts);
+  const opts = withTime
+    ? { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }
+    : { day: '2-digit', month: 'long', year: 'numeric' };
+  return d.toLocaleDateString('es-AR', opts);
+}
+
+let toastTimer;
+function toast(msg, type = 'ok') {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+const OP_NAMES = {
+  'remove-bg': { icon: '✂️', name: 'Quitar fondo' },
+  'upscale':   { icon: '🔬', name: 'Upscaler' },
+};
+
+onAuthStateChanged(fbAuth, async user => {
+  if (!user) { window.location.href = '/login'; return; }
+
+  $('email').textContent = '// ' + user.email;
+
+  try {
+    const token = await user.getIdToken(true);
+    const data  = await fetch('/api/account', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
+    if (!data.success) throw new Error(data.error || 'Error');
+    render(user, data);
+  } catch (err) {
+    $('content').innerHTML = `<div class="card"><div class="empty">No pudimos cargar tu cuenta.<br>${esc(err.message)}</div></div>`;
+  }
+});
+
+function render(user, d) {
+  const creditsText = d.isAdmin ? '∞' : fmt(d.credits);
+  const hint = d.isAdmin
+    ? 'Sos administrador: tenés créditos ilimitados.'
+    : (d.credits >= 2
+        ? `Te alcanza para ${Math.floor(d.credits / 2)} operaciones de IA.`
+        : 'Cargá créditos para seguir usando Quitar fondo y Upscaler.');
+
+  const purchases = d.transactions.length
+    ? d.transactions.map(t => `
+        <div class="item">
+          <div class="l"><div class="ic">💳</div>
+            <div><div class="n">Plan ${esc(t.plan.toUpperCase())}</div><div class="d">${fmtDate(t.createdAt)}</div></div></div>
+          <div class="r"><div class="a lime">+${fmt(t.credits)} créditos</div><div class="a green" style="font-size:11px;margin-top:3px">$${fmt(t.amount)}</div></div>
+        </div>`).join('')
+    : '<div class="empty">Todavía no hiciste compras.</div>';
+
+  const ops = d.operations.length
+    ? d.operations.map(o => {
+        const t  = OP_NAMES[o.type] || { icon: '⚙️', name: o.type };
+        const ok = o.status === 'ok';
+        const cost = !ok ? 'sin cargo' : (o.admin ? 'admin' : `−${o.credits}`);
+        return `
+        <div class="item">
+          <div class="l"><div class="ic">${t.icon}</div>
+            <div><div class="n">${t.name}</div><div class="d">${fmtDate(o.createdAt)}</div></div></div>
+          <div class="r"><div class="a ${ok && !o.admin ? 'lime' : 'muted'}">${cost}</div>
+            <span class="badge ${ok ? 'ok' : 'err'}">${ok ? 'OK' : 'ERROR'}</span></div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">Todavía no hay operaciones.<br>Cuando uses Quitar fondo o Upscaler van a aparecer acá.</div>';
+
+  $('content').innerHTML = `
+    <section class="card hero">
+      <div class="label">Créditos disponibles</div>
+      <div class="big">${creditsText}</div>
+      <div class="hint">${hint}</div>
+      <div class="row">
+        <a class="btn primary" href="/app?comprar=1" ${d.isAdmin ? 'hidden' : ''}>⚡ Cargar créditos</a>
+        <a class="btn" href="/admin" ${d.isAdmin ? '' : 'hidden'}>⚙ Panel admin</a>
+        <a class="btn" href="/app">Ir a las herramientas →</a>
+      </div>
+    </section>
+
+    <div class="stats">
+      <div class="stat"><div class="v">${fmt(d.opsCount)}</div><div class="k">Operaciones</div></div>
+      <div class="stat"><div class="v">$${fmt(d.totalSpent)}</div><div class="k">Total comprado</div></div>
+      <div class="stat"><div class="v" style="font-size:16px;padding-top:6px">${fmtDate(d.createdAt, false)}</div><div class="k">Miembro desde</div></div>
+    </div>
+
+    <section class="card">
+      <div class="label">Cuánto cuesta cada herramienta</div>
+      <div class="prices">
+        <div class="item"><div class="l"><div class="ic">✂️</div><div class="n">Quitar fondo</div></div><div class="a">2 créditos</div></div>
+        <div class="item"><div class="l"><div class="ic">🔬</div><div class="n">Upscaler IA</div></div><div class="a">2 créditos</div></div>
+        <div class="item"><div class="l"><div class="ic">🔄</div><div class="n">Conversor de formatos</div></div><div class="a" style="color:var(--success)">gratis</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="label">Historial de compras</div>
+      ${purchases}
+    </section>
+
+    <section class="card">
+      <div class="label">Últimas operaciones</div>
+      ${ops}
+    </section>
+
+    <section class="card">
+      <div class="label">Seguridad</div>
+      <div class="row">
+        <button class="btn" id="btnReset">🔑 Cambiar contraseña</button>
+        <button class="btn danger" id="btnLogout">⊘ Cerrar sesión</button>
+      </div>
+      <div class="hint" style="margin:12px 0 0">Para cambiar la contraseña te enviamos un email a <b style="color:var(--text)">${esc(user.email)}</b>.</div>
+    </section>
+  `;
+
+  $('btnLogout').onclick = async () => { await signOut(fbAuth); window.location.href = '/'; };
+
+  $('btnReset').onclick = async () => {
+    try {
+      await sendPasswordResetEmail(fbAuth, user.email);
+      toast('✓ Te enviamos un email para cambiar la contraseña', 'ok');
+    } catch (err) {
+      toast('No se pudo enviar el email. Probá de nuevo en unos minutos.', 'err');
+    }
+  };
+}
+</script>
+</body>
+</html>
