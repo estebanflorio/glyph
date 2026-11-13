@@ -11,10 +11,14 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { freeLimit } from './middleware/freeLimit.js';
+import { registerSupportRoutes } from './middleware/support.js';
+
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 const app  = express();
+   app.set('trust proxy', true);   // justo debajo de esta línea (ver aviso abajo)
 const port = process.env.PORT || 3000;
 
 // ─── FIREBASE ADMIN ───────────────────────────────────────────
@@ -680,6 +684,7 @@ app.get('/api/admin/replicate/predictions', requireAdmin, async (req, res) => {
 });
 
 registerAccountRoutes(app, { db, requireAuth, requireAdmin });
+registerSupportRoutes(app, { db, auth, FieldValue, requireAuth, requireAdmin });
 app.listen(port, () => {
   console.log(`
   ██████╗ ██╗   ██╗   ██╗██████╗ ██╗  ██╗

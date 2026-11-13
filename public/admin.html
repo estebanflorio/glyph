@@ -395,6 +395,7 @@ td.highlight { color: var(--text); }
   }
   .nav-item.active { border-left-color: transparent; border-top-color: var(--accent); }
   .nav-item .nav-icon { font-size: 18px; }
+  .nav-badge { position: absolute; top: 3px; left: calc(50% + 6px); margin: 0; font-size: 9px; padding: 0 5px; }
 
   /* Contenido */
   .main { margin-left: 0; width: 100%; min-width: 0; padding: 14px 14px 96px; }
@@ -442,6 +443,24 @@ td.highlight { color: var(--text); }
   .modal { padding: 22px 18px; margin: auto; }
   .toast { bottom: 84px; right: 12px; left: 12px; }
 }
+
+.nav-item { position: relative; }
+.nav-badge {
+  margin-left: auto; min-width: 18px; padding: 1px 6px; border-radius: 20px; text-align: center;
+  background: var(--danger); color: #fff; font-size: 10px; font-weight: 700;
+}
+.nav-badge[hidden] { display: none; }
+.ticket { background: var(--s1); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 12px; }
+.ticket.urgent { border-color: rgba(255,71,87,.45); }
+.ticket-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.ticket-num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+.ticket-date { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); }
+.ticket-from { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); margin-bottom: 8px; word-break: break-all; }
+.ticket-from a { color: var(--accent); text-decoration: none; }
+.ticket-msg { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); line-height: 1.7; white-space: pre-wrap; word-break: break-word; background: var(--s2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+.ticket-ctx { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); line-height: 1.7; margin-bottom: 12px; word-break: break-word; }
+.ticket-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-link { text-decoration: none; display: inline-block; }
 </style>
 </head>
 <body>
@@ -517,6 +536,11 @@ td.highlight { color: var(--text); }
     <div class="nav-item" onclick="navigate('transactions', this)">
       <span class="nav-icon">💳</span>
       <span>Transacciones</span>
+    </div>
+    <div class="nav-item" onclick="navigate('support', this)">
+      <span class="nav-icon">💬</span>
+      <span>Soporte</span>
+      <span class="nav-badge" id="supportBadge" hidden>0</span>
     </div>
     <div class="nav-item" onclick="navigate('logs', this)">
       <span class="nav-icon">📋</span>
@@ -662,6 +686,23 @@ td.highlight { color: var(--text); }
     </div>
   </div>
 
+  <!-- ══ SOPORTE ══ -->
+  <div class="page" id="page-support">
+    <div class="page-title">Bandeja de <span>soporte</span></div>
+    <div class="page-sub">// CONSULTAS, RECLAMOS, ARREPENTIMIENTOS Y BAJAS</div>
+
+    <div class="search-bar">
+      <select class="search-input" id="ticketFilter" onchange="renderTickets()" style="max-width:260px">
+        <option value="new">Pendientes</option>
+        <option value="answered">Respondidos</option>
+        <option value="closed">Cerrados</option>
+        <option value="all">Todos</option>
+      </select>
+      <button class="btn btn-ghost" onclick="loadTickets()">↺ Actualizar</button>
+    </div>
+    <div id="ticketsList"><div class="loading"><div class="loading-dot"></div>Cargando...</div></div>
+  </div>
+
   <!-- ══ LOGS / ACTIVIDAD ══ -->
   <div class="page" id="page-logs">
     <div class="page-title">Actividad <span>reciente</span></div>
@@ -747,6 +788,7 @@ onAuthStateChanged(fbAuth, async user => {
   loadUsers();
   loadTransactions();
   loadLogs();
+  loadTickets();
 });
 
 // ── HELPERS ────────────────────────────────────────────────
@@ -787,6 +829,7 @@ window.navigate = (page, el) => {
   document.getElementById('page-' + page).classList.add('active');
   el.classList.add('active');
   if (page === 'logs') loadLogs();
+  if (page === 'support') loadTickets();
 };
 
 window.logout = async () => {
@@ -993,6 +1036,78 @@ window.toggleBlock = async (uid, email, isBlocked) => {
     showToast('Error: ' + res.error, 'err');
   }
 };
+
+// ════════════════════════════════════════════════════════════════
+// SOPORTE
+// ════════════════════════════════════════════════════════════════
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+let allTickets = [];
+
+const TICKET_TYPES = {
+  consulta:        { label: 'CONSULTA',        cls: 'badge-purple' },
+  pago:            { label: 'PAGO',            cls: 'badge-yellow' },
+  operacion:       { label: 'OPERACIÓN',       cls: 'badge-yellow' },
+  arrepentimiento: { label: 'ARREPENTIMIENTO', cls: 'badge-red' },
+  baja:            { label: 'BAJA',            cls: 'badge-red' },
+  otro:            { label: 'OTRO',            cls: 'badge-purple' },
+};
+const STATUS_LABEL = { new: 'PENDIENTE', answered: 'RESPONDIDO', closed: 'CERRADO' };
+
+async function loadTickets() {
+  const data = await api('/api/admin/tickets');
+  allTickets = data.tickets || [];
+  const pending = allTickets.filter(t => t.status === 'new').length;
+  const badge = document.getElementById('supportBadge');
+  badge.textContent = pending;
+  badge.hidden = pending === 0;
+  renderTickets();
+}
+
+window.renderTickets = () => {
+  const f = document.getElementById('ticketFilter').value;
+  const list = allTickets.filter(t => f === 'all' || t.status === f);
+  const box = document.getElementById('ticketsList');
+  if (!list.length) {
+    box.innerHTML = '<div class="card"><div class="empty"><div class="empty-icon">💬</div>No hay mensajes en esta vista.</div></div>';
+    return;
+  }
+  box.innerHTML = list.map(t => {
+    const ty = TICKET_TYPES[t.type] || TICKET_TYPES.otro;
+    const urgent = (t.type === 'arrepentimiento' || t.type === 'baja') && t.status === 'new';
+    const ctx = t.context
+      ? `Cuenta: ${esc(t.context.accountEmail)} · Créditos: ${esc(t.context.credits)}` +
+        (t.context.lastPurchase ? ` · Última compra: ${esc((t.context.lastPurchase.plan || '').toUpperCase())} $${fmt(t.context.lastPurchase.amount)} (pago ${esc(t.context.lastPurchase.paymentId)})` : '')
+      : 'Sin sesión iniciada';
+    const subject = encodeURIComponent(`Re: [${t.ticket}] GLYPH — tu consulta`);
+    return `
+    <div class="ticket ${urgent ? 'urgent' : ''}">
+      <div class="ticket-head">
+        <span class="badge ${ty.cls}">${ty.label}</span>
+        <span class="badge ${t.status === 'new' ? 'badge-yellow' : t.status === 'answered' ? 'badge-green' : 'badge-purple'}">${STATUS_LABEL[t.status] || ''}</span>
+        ${urgent ? '<span class="badge badge-red">RESPONDER EN 24 HS</span>' : ''}
+        <span class="ticket-num">${esc(t.ticket)}</span>
+        <span class="ticket-date">${fmtDate(t.createdAt)}</span>
+      </div>
+      <div class="ticket-from">${esc(t.name || 'Sin nombre')} · <a href="mailto:${esc(t.email)}?subject=${subject}">${esc(t.email)}</a></div>
+      <div class="ticket-msg">${esc(t.message)}</div>
+      ${t.extra ? `<div class="ticket-ctx">Dato adicional: ${esc(t.extra)}</div>` : ''}
+      <div class="ticket-ctx">${ctx}</div>
+      <div class="ticket-actions">
+        <a class="btn btn-sm btn-primary btn-link" href="mailto:${esc(t.email)}?subject=${subject}">✉ Responder</a>
+        ${t.status !== 'answered' ? `<button class="btn btn-sm btn-purple" onclick="setTicketStatus('${esc(t.id)}','answered')">✓ Respondido</button>` : ''}
+        ${t.status !== 'closed' ? `<button class="btn btn-sm btn-ghost" onclick="setTicketStatus('${esc(t.id)}','closed')">Cerrar</button>` : ''}
+        ${t.status !== 'new' ? `<button class="btn btn-sm btn-ghost" onclick="setTicketStatus('${esc(t.id)}','new')">↺ Reabrir</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+};
+
+window.setTicketStatus = async (id, status) => {
+  const res = await api('/api/admin/tickets/status', { method: 'POST', body: JSON.stringify({ id, status }) });
+  if (res.success) { showToast('✓ Estado actualizado', 'ok'); loadTickets(); }
+  else showToast('Error: ' + res.error, 'err');
+};
+window.loadTickets = loadTickets;
 
 // ════════════════════════════════════════════════════════════════
 // ACTIVIDAD (operaciones de IA)

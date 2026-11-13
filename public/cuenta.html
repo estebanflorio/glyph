@@ -300,9 +300,38 @@ function render(user, d) {
       </div>
       <div class="hint" style="margin:12px 0 0">Para cambiar la contraseña te enviamos un email a <b style="color:var(--text)">${esc(user.email)}</b>.</div>
     </section>
+
+    <section class="card">
+      <div class="label">Baja de la cuenta</div>
+      <div class="hint" style="margin:0 0 14px">${d.isAdmin
+        ? 'Las cuentas de administrador no se eliminan desde acá.'
+        : 'Podés eliminar tu cuenta cuando quieras. Se borran tus datos y se pierden los créditos sin usar. Si compraste en los últimos 10 días y querés arrepentirte, usá el <a href="/ayuda#arrepentimiento" style="color:var(--accent)">botón de arrepentimiento</a> antes de eliminar la cuenta.'}</div>
+      ${d.isAdmin ? '' : '<button class="btn danger" id="btnDelete">🗑 Eliminar mi cuenta</button>'}
+    </section>
   `;
 
   $('btnLogout').onclick = async () => { await signOut(fbAuth); window.location.href = '/'; };
+
+  const delBtn = $('btnDelete');
+  if (delBtn) delBtn.onclick = async () => {
+    const word = prompt('Vas a eliminar tu cuenta de forma permanente. Se borran tus datos y los créditos sin usar.\n\nEscribí ELIMINAR para confirmar.');
+    if (word !== 'ELIMINAR') { if (word !== null) toast('No se eliminó la cuenta: la palabra no coincide.', 'err'); return; }
+    delBtn.disabled = true; delBtn.textContent = 'Eliminando...';
+    try {
+      const token = await user.getIdToken(true);
+      const res = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ confirm: 'ELIMINAR' })
+      }).then(r => r.json());
+      if (!res.success) throw new Error(res.error || 'Error');
+      try { await signOut(fbAuth); } catch (e) {}
+      window.location.href = '/?cuenta=eliminada';
+    } catch (err) {
+      delBtn.disabled = false; delBtn.textContent = '🗑 Eliminar mi cuenta';
+      toast(err.message, 'err');
+    }
+  };
 
   $('btnReset').onclick = async () => {
     try {
@@ -314,5 +343,7 @@ function render(user, d) {
   };
 }
 </script>
+<script src="/assets/site-config.js"></script>
+<script src="/assets/site-widget.js" defer></script>
 </body>
 </html>

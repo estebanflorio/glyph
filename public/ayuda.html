@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLYPH — Ayuda y contacto</title>
+<meta name="description" content="Centro de ayuda de GLYPH: preguntas frecuentes, contacto, botón de arrepentimiento y botón de baja.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+
+<header class="top">
+  <a href="/" class="brand"><div class="dot"></div> GLYPH</a>
+  <a href="/app" class="pill">← Ir a la app</a>
+</header>
+
+<main class="wrap">
+  <h1>Ayuda y <span>contacto</span></h1>
+  <p class="lead">// ATENCIÓN AL USUARIO · <span data-cfg="horario">lunes a viernes de 9 a 18 hs (hora de Argentina)</span></p>
+
+  <div class="channels">
+    <a class="channel" data-wa href="#" style="display:none">
+      <div class="ic">💬</div><div class="t">WhatsApp</div>
+      <div class="d">La forma más rápida de hablar con nosotros.</div>
+    </a>
+    <a class="channel" data-mail href="mailto:soporte@glyph.com.ar">
+      <div class="ic">✉️</div><div class="t">Email</div>
+      <div class="d"><span data-cfg="email">soporte@glyph.com.ar</span></div>
+    </a>
+    <a class="channel" href="#contacto">
+      <div class="ic">📝</div><div class="t">Formulario</div>
+      <div class="d">Escribinos acá abajo. Te respondemos por email.</div>
+    </a>
+  </div>
+
+  <div class="sec-title">// Preguntas frecuentes</div>
+
+  <details><summary>¿Cómo compro créditos?</summary>
+    <div class="ans">Ingresá a la app, tocá tu saldo de créditos (arriba) o "Cargar créditos" en Mi cuenta, elegí un plan y pagá con Mercado Pago (tarjeta, dinero en cuenta, Rapipago o Pago Fácil). Los créditos se acreditan automáticamente cuando el pago se aprueba.</div></details>
+
+  <details><summary>Pagué y no veo mis créditos</summary>
+    <div class="ans">Casi siempre se acreditan en segundos. Si pagaste con efectivo (Rapipago / Pago Fácil), se acreditan cuando Mercado Pago confirma el pago, que puede demorar. Si pasó más de una hora con pago aprobado, escribinos desde el formulario eligiendo "Problema con un pago" e indicá el ID de pago o la fecha de compra.</div></details>
+
+  <details><summary>Una operación falló, ¿pierdo mis créditos?</summary>
+    <div class="ans">No. Si el procesamiento falla por un error del sistema, los créditos se reintegran automáticamente. Si ves que no se reintegraron, avisanos desde el formulario eligiendo "Falló una operación".</div></details>
+
+  <details><summary>¿Cuánto cuesta cada herramienta?</summary>
+    <div class="ans">Quitar fondo: 2 créditos. Upscaler con IA: 2 créditos. Conversor de formatos: gratis.</div></details>
+
+  <details><summary>¿Los créditos vencen?</summary>
+    <div class="ans">No. Tus créditos no vencen mientras tu cuenta esté activa.</div></details>
+
+  <details><summary>¿Qué archivos puedo subir?</summary>
+    <div class="ans">Imágenes JPG, PNG o WEBP de hasta 10 MB para Quitar fondo y Upscaler. El conversor de formatos acepta más tipos de imagen y funciona dentro de tu navegador.</div></details>
+
+  <details><summary>¿Guardan mis imágenes?</summary>
+    <div class="ans">GLYPH no guarda tus imágenes en sus servidores. Para Quitar fondo y Upscaler la imagen se envía a un proveedor de IA que la procesa, y el resultado queda disponible solo por un tiempo limitado, por eso conviene descargarlo apenas termina. El conversor de formatos nunca sube tus archivos. Más detalles en la <a class="link" href="/privacidad">Política de privacidad</a>.</div></details>
+
+  <details><summary>¿Puedo probar sin registrarme?</summary>
+    <div class="ans">Hay una prueba gratuita limitada sin cuenta. Al registrarte recibís 10 créditos de bienvenida.</div></details>
+
+  <details><summary>¿Cómo cambio mi contraseña o elimino mi cuenta?</summary>
+    <div class="ans">Entrá a <a class="link" href="/cuenta">Mi cuenta</a> → sección Seguridad. Ahí podés recibir un email para cambiar la contraseña o eliminar tu cuenta al instante.</div></details>
+
+  <details><summary>Necesito un comprobante de mi compra</summary>
+    <div class="ans">Mercado Pago te envía el comprobante del pago por email. Si necesitás otro comprobante, escribinos con tus datos y el ID de pago.</div></details>
+
+  <div class="sec-title">// Derechos del consumidor</div>
+  <div class="legal-cards">
+    <div class="legal-card" id="arrepentimiento">
+      <h3>Botón de arrepentimiento</h3>
+      <p>Podés anular una compra dentro de los <strong>10 días corridos</strong> desde que la hiciste, sin dar explicaciones y <strong>sin necesidad de tener una cuenta</strong>. Reintegramos el importe por el mismo medio de pago.</p>
+      <button class="btn" onclick="pickType('arrepentimiento')">Anular mi compra →</button>
+    </div>
+    <div class="legal-card" id="baja">
+      <h3>Botón de baja</h3>
+      <p>Podés darte de baja del servicio y eliminar tu cuenta cuando quieras. No hay suscripciones ni cobros recurrentes. La baja se concreta en <strong>un máximo de 24 horas</strong>.</p>
+      <button class="btn" onclick="pickType('baja')">Darme de baja →</button>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:14px">También podés hacer un reclamo en la <a class="link" data-defensa href="#">Ventanilla Federal Única de Defensa del Consumidor</a>.</p>
+
+  <div class="sec-title" id="contacto">// Escribinos</div>
+  <form class="form" id="supportForm" novalidate>
+    <div class="field">
+      <label for="type">Motivo</label>
+      <select id="type">
+        <option value="consulta">Consulta general</option>
+        <option value="pago">Problema con un pago / no veo mis créditos</option>
+        <option value="operacion">Falló una operación (quitar fondo / upscaler)</option>
+        <option value="arrepentimiento">Botón de arrepentimiento (anular una compra)</option>
+        <option value="baja">Botón de baja (eliminar mi cuenta)</option>
+        <option value="otro">Otro</option>
+      </select>
+    </div>
+
+    <div class="help" id="help" hidden></div>
+
+    <div class="field">
+      <label for="email">Tu email</label>
+      <input type="email" id="email" placeholder="tu@email.com" autocomplete="email" maxlength="254">
+    </div>
+    <div class="field">
+      <label for="name">Nombre (opcional)</label>
+      <input type="text" id="name" placeholder="Cómo te llamamos" autocomplete="name" maxlength="100">
+    </div>
+    <div class="field" id="extraWrap">
+      <label for="extra">ID de pago o fecha de la compra (opcional)</label>
+      <input type="text" id="extra" placeholder="Ej: 123456789 o 10/11/2026" maxlength="200">
+    </div>
+    <div class="field">
+      <label for="message">Mensaje</label>
+      <textarea id="message" placeholder="Contanos qué pasó o qué necesitás" maxlength="3000"></textarea>
+    </div>
+
+    <div class="hp" aria-hidden="true">
+      <label>No completar este campo <input type="text" id="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <button type="submit" class="btn" id="sendBtn">Enviar mensaje</button>
+    <div class="msg ok" id="okMsg" hidden></div>
+    <div class="msg err" id="errMsg" hidden></div>
+  </form>
+</main>
+
+<script type="module">
+const $ = id => document.getElementById(id);
+
+const HELP = {
+  pago: 'Si pagaste y no ves tus créditos, indicanos el ID de pago (figura en el comprobante de Mercado Pago) o la fecha.',
+  operacion: 'Contanos qué herramienta usaste y a qué hora, así podemos revisar y reintegrar los créditos si corresponde.',
+  arrepentimiento: 'Tenés 10 días corridos desde la compra. No hace falta tener cuenta. Indicá el email con el que compraste y, si podés, el ID de pago o la fecha. Reintegramos por el mismo medio de pago.',
+  baja: 'Procesamos la baja en un máximo de 24 horas. Si tenés cuenta, también podés eliminarla al instante desde Mi cuenta → Seguridad. Los créditos sin usar se pierden al eliminar la cuenta.',
+};
+
+function updateHelp() {
+  const t = $('type').value;
+  const h = $('help');
+  if (HELP[t]) { h.textContent = HELP[t]; h.hidden = false; } else { h.hidden = true; }
+  $('extraWrap').style.display = (t === 'pago' || t === 'arrepentimiento') ? '' : 'none';
+}
+$('type').addEventListener('change', updateHelp);
+
+window.pickType = t => {
+  $('type').value = t;
+  updateHelp();
+  $('contacto').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => $('email').focus(), 500);
+};
+
+if (location.hash === '#arrepentimiento' || location.hash === '#baja') {
+  // El hash apunta a la tarjeta; dejamos el formulario preseleccionado para ahorrar un paso
+  $('type').value = location.hash.slice(1);
+}
+updateHelp();
+
+// Si hay sesión iniciada, autocompletamos el email y vinculamos la consulta a la cuenta
+let token = null;
+(async () => {
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+    const cfg = await fetch('/api/firebase-config').then(r => r.json());
+    const auth = getAuth(initializeApp(cfg));
+    onAuthStateChanged(auth, async u => {
+      if (!u) return;
+      token = await u.getIdToken();
+      if (!$('email').value) $('email').value = u.email || '';
+    });
+  } catch (e) { /* sin sesión: el formulario funciona igual */ }
+})();
+
+$('supportForm').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  $('okMsg').hidden = true; $('errMsg').hidden = true;
+
+  const body = {
+    type: $('type').value,
+    email: $('email').value.trim(),
+    name: $('name').value.trim(),
+    extra: $('extra').value.trim(),
+    message: $('message').value.trim(),
+    website: $('website').value,
+  };
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) return showErr('Ingresá un email válido para poder responderte.');
+  if (body.message.length < 10) return showErr('Contanos un poco más: el mensaje es muy corto.');
+
+  $('sendBtn').disabled = true; $('sendBtn').textContent = 'Enviando...';
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = 'Bearer ' + token;
+    const res = await fetch('/api/support', { method: 'POST', headers, body: JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) throw new Error(data.error || 'No pudimos enviar tu mensaje. Probá de nuevo.');
+
+    const extra = body.type === 'baja'
+      ? ' Vamos a procesar tu baja en un máximo de 24 horas.'
+      : (body.type === 'arrepentimiento' ? ' Vamos a gestionar tu reintegro y te confirmamos por email.' : ' Te respondemos por email lo antes posible.');
+    $('okMsg').textContent = `✓ Recibimos tu mensaje. Número de consulta: ${data.ticket}.` + extra;
+    $('okMsg').hidden = false;
+    $('supportForm').reset(); updateHelp();
+  } catch (err) {
+    showErr(err.message);
+  } finally {
+    $('sendBtn').disabled = false; $('sendBtn').textContent = 'Enviar mensaje';
+  }
+});
+
+function showErr(msg) { $('errMsg').textContent = msg; $('errMsg').hidden = false; }
+</script>
+
+<script src="/assets/site-config.js"></script>
+<script src="/assets/site-widget.js" defer></script>
+</body>
+</html>
