@@ -30,6 +30,36 @@
     '.gl-copy{font-size:10px;color:#444458;letter-spacing:1px}' +
     '@media(max-width:560px){.gl-fab span{display:none}.gl-fab{padding:14px}}';
 
+
+  // ── Temas de temporada ──────────────────────────────────────────
+  // GLYPH_CONFIG.tema: 'auto' (por defecto: Navidad del 1/12 al 6/1), 'navidad' (siempre) o '' (apagado).
+  // Para probar: agregá ?tema=navidad a cualquier URL; ?tema=off lo apaga.
+  function pickTheme() {
+    var q = (location.search.match(/[?&]tema=([^&]*)/) || [])[1];
+    try {
+      if (q === 'off') sessionStorage.removeItem('glyph_tema');
+      else if (q) sessionStorage.setItem('glyph_tema', q);
+      else q = sessionStorage.getItem('glyph_tema') || '';
+    } catch (e) {}
+    if (q === 'off') return '';
+    if (q) return q;
+    var t = C.tema === undefined ? 'auto' : C.tema;
+    if (t === 'auto') {
+      var d = new Date(), m = d.getMonth(), day = d.getDate();
+      return (m === 11 || (m === 0 && day <= 6)) ? 'navidad' : '';
+    }
+    return t;
+  }
+  function loadTheme(name) {
+    if (name !== 'navidad') return;           // por ahora solo existe este tema
+    var l = document.createElement('link');
+    l.rel = 'stylesheet'; l.href = '/assets/theme-' + name + '.css';
+    document.head.appendChild(l);
+    var s = document.createElement('script');
+    s.src = '/assets/theme-' + name + '.js'; s.defer = true;
+    document.body.appendChild(s);             // si el archivo no existe, falla en silencio
+  }
+
   function init() {
     var st = document.createElement('style');
     st.textContent = css;
@@ -79,6 +109,8 @@
     document.querySelectorAll('[data-defensa]').forEach(function (el) {
       el.href = DEFENSA; el.target = '_blank'; el.rel = 'noopener';
     });
+
+    loadTheme(pickTheme());
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

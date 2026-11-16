@@ -1,0 +1,73 @@
+/* ═══════════════════════════════════════════════════════════════
+   TEMA NAVIDAD — GLYPH
+   Todo está bajo html[data-tema="navidad"], así que sin ese atributo
+   el sitio queda exactamente con su diseño original.
+   Para quitarlo: poné tema: '' en site-config.js (o borrá este archivo
+   y theme-navidad.js).
+   ═══════════════════════════════════════════════════════════════ */
+
+html[data-tema="navidad"] {
+  --accent2: #e63946;          /* el violeta pasa a rojo navideño */
+  --xmas-red: #e63946;
+  --xmas-gold: #f4c95d;
+  --xmas-pine: #2d6a4f;
+}
+
+/* Resplandores suaves rojo y verde (encima de la grilla, debajo del contenido) */
+html[data-tema="navidad"] body::after {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(230,57,70,.13), transparent 38%),
+    radial-gradient(circle at 92% 100%, rgba(45,106,79,.22), transparent 42%);
+}
+
+/* ── Luces colgantes ── */
+.xmas-lights {
+  position: fixed; top: 0; left: 0; right: 0; height: 26px;
+  pointer-events: none; z-index: 850; overflow: hidden;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='20'%3E%3Cpath d='M0 2Q45 18 90 2' fill='none' stroke='%232d6a4f' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x top left;
+}
+.xmas-bulb {
+  position: absolute; width: 7px; height: 10px; margin-left: -3.5px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: var(--c); box-shadow: 0 0 8px 2px var(--c);
+  animation: xmasTwinkle 1.9s ease-in-out infinite;
+}
+.xmas-bulb::before {
+  content: ''; position: absolute; top: -3px; left: 1px; width: 5px; height: 4px;
+  background: #1b3a2a; border-radius: 1px;
+}
+@keyframes xmasTwinkle { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* ── Gorro de Papá Noel sobre el logo ── */
+html[data-tema="navidad"] .logo,
+html[data-tema="navidad"] .nav-logo,
+html[data-tema="navidad"] .brand { position: relative; }
+.xmas-hat {
+  position: absolute; right: -9px; top: -13px; width: 27px; height: 22px;
+  transform: rotate(16deg); pointer-events: none; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5));
+}
+
+/* ── Nieve ── */
+.xmas-snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 800; }
+
+/* ── Botón para pausar la nieve ── */
+.xmas-toggle {
+  position: fixed; left: 14px; bottom: 14px; z-index: 900;
+  width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+  background: rgba(17,17,19,.92); border: 1px solid #2a2a32; color: #e8e8ec; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; transition: all .2s;
+}
+.xmas-toggle:hover { border-color: #f4c95d; }
+.xmas-toggle.off { opacity: .55; }
+
+/* ── Detalles festivos ── */
+html[data-tema="navidad"] .gl-copy .xmas-msg { color: #f4c95d; }
+
+@media (max-width: 640px) {
+  .xmas-bulb { width: 6px; height: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .xmas-bulb { animation: none; }
+  .xmas-snow { display: none; }
+}
