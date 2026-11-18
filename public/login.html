@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, follow">
 <title>GLYPH — Acceder</title>
 <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
@@ -452,6 +453,8 @@ body::after {
   .auth-form { padding: 24px 20px; }
   .back-btn { top: 16px; left: 16px; }
 }
+.free-note { margin: 4px 0 14px; padding: 10px 12px; border-radius: 8px; background: rgba(200,241,53,.08); border: 1px solid rgba(200,241,53,.25); font-family: "DM Mono", monospace; font-size: 12px; line-height: 1.6; color: #8888a0; }
+.free-note strong { color: #c8f135; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -512,13 +515,14 @@ body::after {
         <input type="password" id="regPass2" placeholder="Repetí la contraseña" autocomplete="new-password">
       </div>
 
+      <div class="free-note">🎁 <strong>10 créditos gratis</strong> al crear tu cuenta (5 operaciones de IA). Sin tarjeta.</div>
       <button class="auth-submit" id="btnRegister">Crear cuenta</button>
       <div class="field-error error" id="regError"></div>
     </div>
 
     <!-- Footer note -->
     <div class="auth-note">
-      Al registrarte aceptás los <a href="/terminos">términos de uso</a>.<br>
+      Al registrarte aceptás los <a href="/terminos">términos de uso</a> y la <a href="/privacidad">política de privacidad</a>.<br>
       Pagos procesados con Mercado Pago en pesos argentinos 🇦🇷
     </div>
 

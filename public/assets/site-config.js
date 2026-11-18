@@ -11,12 +11,12 @@ window.GLYPH_CONFIG = {
   email: 'soporte@glyph.com.ar',
 
   // Horario de atención que vas a poder cumplir de verdad
-  horario: 'lunes a viernes de 9 a 18 hs (hora de Argentina)',
+  horario: 'lunes a viernes de 9 a 15 hs (hora de Argentina)',
 
   // Datos del titular (aparecen en Términos y Privacidad)
   titular: 'Esteban Florio',
-  cuit: '[COMPLETAR: CUIT del titular]',
-  domicilio: '[COMPLETAR: domicilio legal del titular]',
+  cuit: '20333331250',
+  domicilio: 'Av. Juan M. de Rosas 9200',
 
   actualizado: '13 de noviembre de 2026'
 };

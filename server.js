@@ -62,7 +62,7 @@ app.use((req, res, next) => {
 // ════════════════════════════════════════════════════════════════
 const rateLimitStore = new Map();
 
-function rateLimit({ windowMs = 60_000, max = 20, keyFn = (req) => req.ip } = {}) {
+function rateLimit({ windowMs = 60_000, max = 20, keyFn = (req) => req.headers['cf-connecting-ip'] || req.ip } = {}) {
   return (req, res, next) => {
     const key  = keyFn(req);
     const now  = Date.now();
@@ -182,7 +182,11 @@ app.post('/api/webhook-mp', limitWebhook, express.raw({ type: 'application/json'
 });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    if (/\.(html|js|css)$/.test(filePath)) res.setHeader('Cache-Control', 'no-cache');
+  }
+}));
 
 // ─── RUTAS DE PÁGINAS ─────────────────────────────────────────
 app.get('/login', (req, res) => {
