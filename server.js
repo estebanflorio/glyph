@@ -183,6 +183,7 @@ app.post('/api/webhook-mp', limitWebhook, express.raw({ type: 'application/json'
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), {
+  extensions: ['html'],
   setHeaders: (res, filePath) => {
     if (/\.(html|js|css)$/.test(filePath)) res.setHeader('Cache-Control', 'no-cache');
   }
