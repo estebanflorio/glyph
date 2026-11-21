@@ -936,6 +936,9 @@
     <button class="nav-tab" onclick="switchTab('convert', this)">
       <span class="tab-icon">🔄</span> Conversor
     </button>
+    <a class="nav-tab" href="/semitonos" id="tabSemitonos" style="text-decoration:none">
+      <span class="tab-icon">✦</span> Semitonos DTF <span id="semiLock" title="Incluido en los paquetes Pro y Studio">🔒</span>
+    </a>
 
   </nav>
   <div class="header-auth" id="headerAuth">
@@ -1789,6 +1792,16 @@ async function refreshUserData() {
   const res  = await fetch('/api/me', { headers: { Authorization: `Bearer ${idToken}` } });
   const data = await res.json();
   renderLoggedIn(data);
+  updateSemitonosTab();
+}
+
+// Muestra u oculta el candado de la pestaña Semitonos DTF según el acceso del usuario
+async function updateSemitonosTab() {
+  try {
+    const r = await fetch('/api/features', { headers: { Authorization: `Bearer ${idToken}` } }).then(x => x.json());
+    const lock = document.getElementById('semiLock');
+    if (lock && r.success) lock.style.display = r.semitonos ? 'none' : '';
+  } catch (e) { /* si falla, el candado queda visible */ }
 }
 
 function renderLoggedIn({ email, credits, isAdmin }) {
@@ -1818,6 +1831,7 @@ function updateCreditsDisplay(credits) {
 }
 
 async function logout() {
+  try { await fetch('/api/session/clear', { method: 'POST' }); } catch (e) {}
   await window._fbSignOut?.();
   window.location.href = '/login';
 }

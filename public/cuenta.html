@@ -310,7 +310,7 @@ function render(user, d) {
     </section>
   `;
 
-  $('btnLogout').onclick = async () => { await signOut(fbAuth); window.location.href = '/'; };
+  $('btnLogout').onclick = async () => { try { await fetch('/api/session/clear', { method: 'POST' }); } catch (e) {} await signOut(fbAuth); window.location.href = '/'; };
 
   const delBtn = $('btnDelete');
   if (delBtn) delBtn.onclick = async () => {
@@ -325,7 +325,7 @@ function render(user, d) {
         body: JSON.stringify({ confirm: 'ELIMINAR' })
       }).then(r => r.json());
       if (!res.success) throw new Error(res.error || 'Error');
-      try { await signOut(fbAuth); } catch (e) {}
+      try { await fetch('/api/session/clear', { method: 'POST' }); await signOut(fbAuth); } catch (e) {}
       window.location.href = '/?cuenta=eliminada';
     } catch (err) {
       delBtn.disabled = false; delBtn.textContent = '🗑 Eliminar mi cuenta';

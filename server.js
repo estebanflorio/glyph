@@ -12,6 +12,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { freeLimit } from './middleware/freeLimit.js';
 import { registerSupportRoutes } from './middleware/support.js';
+import { registerSemitonosRoutes } from './middleware/semitonos.js';
 
 
 
@@ -689,6 +690,7 @@ app.get('/api/admin/replicate/predictions', requireAdmin, async (req, res) => {
 });
 
 registerAccountRoutes(app, { db, requireAuth, requireAdmin });
+registerSemitonosRoutes(app, { db, FieldValue, requireAuth, requireAdmin });
 registerSupportRoutes(app, { db, auth, FieldValue, requireAuth, requireAdmin });
 app.listen(port, () => {
   console.log(`

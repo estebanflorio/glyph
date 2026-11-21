@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0b" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Semitonos DTF · GLYPH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo"><span class="dot"></span>GLYPH</div>
+      <h1>SEMITONOS <span class="outline">DTF</span></h1>
+      <div class="tag">Trama HD para remeras</div>
+      <a class="back-link" href="/app">← Volver a GLYPH</a>
+    </div>
+
+    <button type="button" class="btn btn-outline" id="uploadTrigger">Subir PNG / JPG / JFIF</button>
+    <input type="file" id="fileInput" accept="image/*" style="display:none" />
+
+    <div class="section-title">Presets</div>
+    <div class="row-btns">
+      <select id="presetSelect" aria-label="Presets guardados"></select>
+      <button type="button" class="btn btn-outline btn-mini" id="presetSave" title="Guardar los ajustes actuales como preset">Guardar</button>
+      <button type="button" class="btn btn-outline btn-mini" id="presetDelete" title="Borrar el preset elegido">Borrar</button>
+    </div>
+
+    <div class="section-title">1. Tamaño real (300 DPI)</div>
+    <div class="control">
+      <label>Ancho de impresión <span class="val" id="printWidthVal">22 cm</span></label>
+      <input type="range" id="printWidth" min="8" max="40" value="22" />
+    </div>
+    <div class="control">
+      <label>Densidad de trama (LPI) <span class="val" id="lpiVal">42 LPI</span></label>
+      <input type="range" id="lpi" min="20" max="65" value="42" />
+    </div>
+
+    <div class="section-title">2. Ajuste de imagen</div>
+    <div class="row-2">
+      <div class="control">
+        <label>Contraste <span class="val" id="contrastVal">20%</span></label>
+        <input type="range" id="contrast" min="-40" max="100" value="20" />
+      </div>
+      <div class="control">
+        <label>Nitidez <span class="val" id="sharpVal">40%</span></label>
+        <input type="range" id="sharpness" min="0" max="100" value="40" />
+      </div>
+    </div>
+
+    <div class="section-title">3. Geometría de punto</div>
+    <div class="row-2">
+      <div class="control">
+        <label>Forma</label>
+        <select id="dotShape">
+          <option value="circle">Círculo</option>
+          <option value="diamond">Diamante</option>
+          <option value="square">Cuadrado</option>
+          <option value="line">Línea (grabado)</option>
+        </select>
+      </div>
+      <div class="control">
+        <label>Ángulo <span class="val" id="angleVal">45°</span></label>
+        <input type="range" id="angle" min="0" max="90" value="45" />
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="control">
+        <label>Punto máx. <span class="val" id="maxDotVal">96%</span></label>
+        <input type="range" id="maxDot" min="60" max="120" value="96" />
+      </div>
+      <div class="control">
+        <label>Corte mín. <span class="val" id="minThreshVal">8%</span></label>
+        <input type="range" id="minThresh" min="0" max="35" value="8" />
+      </div>
+    </div>
+
+    <div class="section-title">4. Salida DTF</div>
+    <div class="row-2">
+      <div class="control">
+        <label>Modo color</label>
+        <select id="colorMode">
+          <option value="original">Color RGB</option>
+          <option value="mono">Monocromo</option>
+        </select>
+      </div>
+      <div class="control" id="tintControl" style="visibility:hidden">
+        <label>Color tinta</label>
+        <input type="color" id="inkColor" value="#ffffff" />
+      </div>
+    </div>
+    <label class="checkbox-row">
+      <input type="checkbox" id="invertMode" checked />
+      <span>Knockout remera negra (cala oscuros)</span>
+    </label>
+    <label class="checkbox-row">
+      <input type="checkbox" id="hardEdges" checked />
+      <span>Bordes duros 100% opacos (sin halo RIP)</span>
+    </label>
+
+    <div class="section-title">5. Calidad avanzada</div>
+    <div class="row-2">
+      <div class="control">
+        <label>Curva de tono <span class="val" id="toneGammaVal">1.00</span></label>
+        <input type="range" id="toneGamma" min="0.6" max="1.6" step="0.05" value="1" />
+      </div>
+      <div class="control">
+        <label>Punto mín. <span class="val" id="minDotPxVal">1.2 px</span></label>
+        <input type="range" id="minDotPx" min="0.6" max="3" step="0.1" value="1.2" />
+      </div>
+    </div>
+    <label class="checkbox-row">
+      <input type="checkbox" id="linearLum" />
+      <span>Luminancia lineal (tonos más fieles)</span>
+    </label>
+
+    <div class="actions">
+      <button type="button" class="btn" id="downloadBtn" disabled>Descargar PNG HD (300 DPI)</button>
+      <div class="sample-row">
+        <button type="button" class="btn btn-outline" id="sampleBtn" disabled
+          title="Exporta un recorte a 300 DPI del centro de lo que ves (en Zoom 100%) o del centro de la imagen">Muestra de prueba</button>
+        <select id="sampleSize" aria-label="Tamaño de la muestra">
+          <option value="5">5×5 cm</option>
+          <option value="8">8×8 cm</option>
+          <option value="10">10×10 cm</option>
+        </select>
+      </div>
+      <div class="foot"><b>glyph.com.ar</b> · Hecho en Argentina</div>
+    </div>
+  </aside>
+
+  <main class="preview-area">
+    <div class="toolbar">
+      <span class="lbl">Prenda</span>
+      <div class="swatch swatch-checker" data-bg="checker" title="Transparente"></div>
+      <div class="swatch active" style="background:#09090b" data-bg="#09090b" title="Remera negra"></div>
+      <div class="swatch" style="background:#f8fafc" data-bg="#f8fafc" title="Remera blanca"></div>
+      <div class="swatch" style="background:#1e293b" data-bg="#1e293b" title="Azul marino"></div>
+      <div class="swatch" style="background:#7f1d1d" data-bg="#7f1d1d" title="Bordó"></div>
+      <span class="sep"></span>
+      <label class="checkbox-row"><input type="checkbox" id="zoomMode" /><span>Zoom 100%</span></label>
+      <label class="checkbox-row"><input type="checkbox" id="compareMode" /><span>Antes / después</span></label>
+      <input type="range" id="compareSlider" min="0" max="100" value="50" style="display:none" aria-label="Divisor antes y después" />
+      <span class="cmp-hint" id="compareHint" style="display:none">◂ original · trama ▸</span>
+      <span id="infoText" class="info"></span>
+    </div>
+
+    <div class="canvas-wrapper" id="canvasWrapper" style="background-image:none; background-color:#09090b;">
+      <div class="placeholder" id="placeholder">Subí una imagen para generar la trama HD en tiempo real</div>
+      <canvas id="previewCanvas" style="display:none;"></canvas>
+      <canvas id="compareCanvas" class="compare-canvas" style="display:none;"></canvas>
+      <div id="compareLine" class="compare-line" style="display:none;"></div>
+    </div>
+  </main>
+
+  <script src="halftone-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
