@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Blog · Editor</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css">
+<link rel="stylesheet" href="__ADMIN__/assets/editor.css">
+</head>
+<body data-admin="__ADMIN__" data-public="__BASE__">
+<header class="bar">
+  <h1>Blog</h1>
+  <div><a href="/admin">← Panel admin</a> &nbsp; <a href="__BASE__" target="_blank" rel="noopener">Ver blog ↗</a> <button id="btnNew" class="btn primary">Nuevo artículo</button></div>
+</header>
+<main>
+  <section id="listView">
+    <table><thead><tr><th>Título</th><th>Estado</th><th>Actualizado</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+    <p id="emptyMsg" hidden>Todavía no hay artículos.</p>
+  </section>
+
+  <section id="editView" hidden>
+    <div class="row"><button id="btnBack" class="btn">← Volver</button><span id="status"></span></div>
+    <label>Título<input id="title" maxlength="140"></label>
+    <label>URL (slug) <small>se genera desde el título si lo dejás vacío</small><input id="slug" maxlength="80"></label>
+    <label>Descripción para Google (meta description) <small id="excCount"></small><textarea id="excerpt" rows="2" maxlength="200"></textarea></label>
+    <label>Título SEO (opcional, máx. 70)<input id="seoTitle" maxlength="70"></label>
+    <div class="cover-box">
+      <img id="coverPreview" alt="" hidden>
+      <div>
+        <label>Imagen de portada<input type="file" id="coverFile" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+        <label>Texto alternativo de la portada<input id="coverAlt" maxlength="140"></label>
+      </div>
+    </div>
+    <label>Etiquetas (separadas por coma)<input id="tags"></label>
+    <div id="editor"></div>
+    <div class="row">
+      <select id="statusSel"><option value="draft">Borrador</option><option value="published">Publicado</option></select>
+      <button id="btnSave" class="btn primary">Guardar</button>
+      <a id="btnView" hidden target="_blank" rel="noopener">Ver artículo ↗</a>
+    </div>
+  </section>
+</main>
+<script>
+// Inicia sesión con Firebase (misma cuenta admin del panel) y entrega el token al editor
+window.BLOG_READY = (async () => {
+  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+  const cfg = await fetch('/api/firebase-config').then((r) => r.json());
+  const auth = getAuth(initializeApp(cfg));
+  const user = await new Promise((resolve) => onAuthStateChanged(auth, resolve));
+  if (!user) { location.href = '/login?redirect=admin'; await new Promise(() => {}); }
+  window.BLOG_AUTH_HEADERS = async () => ({ Authorization: 'Bearer ' + (await user.getIdToken()) });
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+<script src="__ADMIN__/assets/editor.js"></script>
+</body></html>

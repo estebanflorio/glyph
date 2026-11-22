@@ -1,0 +1,40 @@
+GLYPH — Blog (módulo adaptado)
+==============================
+Descomprimí este .zip ENCIMA de la carpeta del proyecto (respeta las carpetas).
+
+NUEVO:
+  blog/                        el módulo (público + editor + imágenes en Firestore)
+  middleware/blog-setup.js     puente con tu server.js (plantilla oscura de GLYPH incluida)
+  public/assets/blog-theme.css estilos del blog
+
+REEMPLAZA:
+  public/assets/site-widget.js (suma el link "Blog" en la barra legal de todo el sitio)
+
+1) INSTALAR LA DEPENDENCIA (en la carpeta del proyecto, en tu PC):
+     npm install sanitize-html
+   Esto modifica package.json y package-lock.json: subí AMBOS al repo (Railway instala desde ahí).
+
+2) EN server.js agregá 2 líneas:
+   - arriba, con los otros import:
+       import { mountGlyphBlog } from './middleware/blog-setup.js';
+   - antes de app.listen(...), junto a las otras registerXxxRoutes:
+       mountGlyphBlog(app, { requireAdmin });
+
+3) robots.txt: agregá esta línea al final:
+       Sitemap: https://glyph.com.ar/blog/sitemap.xml
+
+4) (opcional) link al editor en el panel admin, dentro del <nav class="sidebar-nav"> de public/admin.html:
+       <a class="nav-item" href="/admin/blog" style="text-decoration:none"><span class="nav-icon">✍️</span><span>Blog</span></a>
+
+5) Push y, cuando termine el deploy, purgá la caché de Cloudflare.
+
+USO
+  - Editor (solo admin):  https://glyph.com.ar/admin/blog
+  - Blog público:         https://glyph.com.ar/blog
+  - Después de publicar el primer artículo, en Google Search Console enviá  /blog/sitemap.xml
+
+NOTAS
+  - Las imágenes se guardan en tu Firestore (colección blog_images). El editor las achica solo
+    (máx. 1600 px, WEBP, hasta 900 KB). No hace falta Firebase Storage ni plan Blaze.
+  - Los artículos se guardan en la colección blog_posts. Todo el HTML se limpia al guardar.
+  - Si cambiás el "slug" de un artículo ya publicado, su dirección vieja deja de funcionar (no hay redirección).

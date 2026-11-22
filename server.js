@@ -13,7 +13,7 @@ import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { freeLimit } from './middleware/freeLimit.js';
 import { registerSupportRoutes } from './middleware/support.js';
 import { registerSemitonosRoutes } from './middleware/semitonos.js';
-
+import { mountGlyphBlog } from './middleware/blog-setup.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -690,6 +690,7 @@ app.get('/api/admin/replicate/predictions', requireAdmin, async (req, res) => {
 });
 
 registerAccountRoutes(app, { db, requireAuth, requireAdmin });
+mountGlyphBlog(app, { requireAdmin });
 registerSemitonosRoutes(app, { db, FieldValue, requireAuth, requireAdmin });
 registerSupportRoutes(app, { db, auth, FieldValue, requireAuth, requireAdmin });
 app.listen(port, () => {

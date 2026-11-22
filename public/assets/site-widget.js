@@ -83,6 +83,7 @@
     bar.setAttribute('role', 'contentinfo');
     bar.innerHTML =
       '<div class="gl-links">' +
+        '<a href="/blog">Blog</a>' +
         '<a href="/ayuda">Ayuda y contacto</a>' +
         '<a href="/terminos">Términos y condiciones</a>' +
         '<a href="/privacidad">Privacidad</a>' +
