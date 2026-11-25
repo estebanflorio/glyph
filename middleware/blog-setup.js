@@ -10,7 +10,14 @@ import { getFirestore } from 'firebase-admin/firestore';
 const adminShim = { firestore: () => getFirestore() };
 
 const require = createRequire(import.meta.url);
-const { mountBlog } = require('../blog/index.js');
+// Si el blog no puede cargarse (por ejemplo, falta instalar una dependencia), el sitio NO se cae:
+// se registra el error en los logs y todo lo demás sigue funcionando.
+let mountBlog = null;
+try {
+  ({ mountBlog } = require('../blog/index.js'));
+} catch (e) {
+  console.error('[blog] No se pudo cargar el blog. El sitio sigue funcionando sin blog. Motivo:', e.message);
+}
 
 const SITE_URL = (process.env.PUBLIC_URL || 'https://glyph.com.ar').replace(/\/$/, '');
 
@@ -40,7 +47,9 @@ ${body}
 </body></html>`;
 
 export function mountGlyphBlog(app, { requireAdmin, adminSdk = adminShim } = {}) {
-  return mountBlog(app, {
+  if (!mountBlog) return null;
+  try {
+    return mountBlog(app, {
     admin: adminSdk,
     requireAdmin,                                   // el mismo middleware de tu panel (Bearer token)
     adminShellGuard: (req, res, next) => next(),    // la página del editor no tiene datos: la API sí está protegida
@@ -53,5 +62,9 @@ export function mountGlyphBlog(app, { requireAdmin, adminSdk = adminShim } = {})
     ctaText: 'Crear cuenta · 10 créditos gratis',
     layout: glyphLayout,
     imageStore: 'firestore',                        // imágenes en tu Firestore (sin Firebase Storage ni plan Blaze)
-  });
+    });
+  } catch (e) {
+    console.error('[blog] Falló el montaje del blog. El sitio sigue funcionando sin blog. Motivo:', e.message);
+    return null;
+  }
 }

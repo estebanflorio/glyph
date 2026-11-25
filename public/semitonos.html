@@ -58,8 +58,8 @@
       <div data-state="loading" class="on"><p><span class="spin"></span>Verificando tu acceso…</p></div>
 
       <div data-state="open">
-        <h2>Abriendo la herramienta…</h2>
-        <p>Si no se abre sola, tocá el botón.</p>
+        <h2 id="openTitle">Tenés acceso a Semitonos DTF</h2>
+        <p id="openText">Tu cuenta tiene la herramienta habilitada. Podés abrirla cuando quieras.</p>
         <div class="tp-actions"><a class="btn" href="/herramientas/semitonos/">Abrir Semitonos DTF →</a></div>
       </div>
 
@@ -156,8 +156,15 @@ try {
       const token = await user.getIdToken();
       const r = await fetch('/api/session', { method: 'POST', headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
       if (!r.success) throw new Error('session');
-      if (r.semitonos) { show('open'); location.replace('/herramientas/semitonos/'); }
-      else show('locked');
+      if (r.semitonos) {
+        show('open');
+        // Solo se abre sola cuando venís desde la pestaña de la app (?abrir=1). Desde cualquier otro lado ves esta descripción.
+        if (new URLSearchParams(location.search).get('abrir') === '1') {
+          $('#openTitle').textContent = 'Abriendo la herramienta…';
+          $('#openText').textContent = 'Si no se abre sola, tocá el botón.';
+          location.replace('/herramientas/semitonos/');
+        }
+      } else show('locked');
     } catch (e) { show('error'); }
   });
 } catch (e) { show('error'); }

@@ -1,0 +1,26 @@
+[
+  {
+    "file": "01-quitar-fondo-dtf.html",
+    "title": "Cómo quitar el fondo de una imagen para DTF (y evitar el recuadro en la remera)",
+    "slug": "como-quitar-el-fondo-de-una-imagen-para-dtf",
+    "seoTitle": "Cómo quitar el fondo de una imagen para DTF",
+    "excerpt": "Paso a paso para dejar tu diseño con fondo transparente antes de imprimir en DTF, qué revisar en los bordes y cómo evitar el recuadro en la prenda.",
+    "tags": ["dtf", "quitar fondo", "png transparente", "diseño"]
+  },
+  {
+    "file": "02-resolucion-sublimacion-dtf.html",
+    "title": "Qué resolución necesito para imprimir en sublimación y DTF",
+    "slug": "que-resolucion-necesito-para-imprimir-en-sublimacion-y-dtf",
+    "seoTitle": "Resolución para imprimir en sublimación y DTF",
+    "excerpt": "Cuántos píxeles necesita tu archivo según el tamaño de impresión, qué significan los 300 ppp y qué hacer si tu imagen es más chica de lo que necesitás.",
+    "tags": ["resolución", "sublimación", "dtf", "upscaler"]
+  },
+  {
+    "file": "03-formatos-jpg-png-webp-avif.html",
+    "title": "JPG, PNG, WEBP o AVIF: qué formato elegir según el trabajo",
+    "slug": "jpg-png-webp-avif-que-formato-elegir",
+    "seoTitle": "JPG, PNG, WEBP o AVIF: qué formato elegir",
+    "excerpt": "Diferencias entre JPG, PNG, WEBP y AVIF, cuándo conviene cada uno para imprimir o para la web y cómo convertirlos gratis sin subir tus archivos.",
+    "tags": ["formatos", "jpg", "png", "webp", "avif", "conversor"]
+  }
+]

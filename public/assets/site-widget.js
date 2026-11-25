@@ -14,7 +14,7 @@
   }
 
   var css = '' +
-    '.gl-fab{position:fixed;right:16px;bottom:16px;z-index:900;display:flex;align-items:center;gap:8px;' +
+    '.gl-fab{position:fixed;right:16px;bottom:calc(16px + var(--gl-bar-h,0px));z-index:900;display:flex;align-items:center;gap:8px;' +
     'padding:12px 16px;border-radius:999px;background:#25d366;color:#0a0a0b;text-decoration:none;' +
     'font:600 12px "DM Mono",monospace;letter-spacing:.5px;box-shadow:0 6px 24px rgba(0,0,0,.45);transition:transform .2s}' +
     '.gl-fab:hover{transform:translateY(-2px)}' +
@@ -28,6 +28,8 @@
     '.gl-links a.gl-btn{padding:6px 12px;border:1px solid #2a2a32;border-radius:6px;color:#c8f135}' +
     '.gl-links a.gl-btn:hover{border-color:#c8f135;color:#c8f135}' +
     '.gl-copy{font-size:10px;color:#444458;letter-spacing:1px}' +
+    '.gl-legal.gl-fixed,.gl-legal.gl-fixed.gl-pad{position:fixed;left:0;right:0;bottom:0;margin:0;padding:10px 12px;z-index:5;background:rgba(10,10,11,.94);border-top:1px solid #2a2a32}' +
+    '.gl-fixed .gl-links{margin-bottom:0;gap:4px 14px}.gl-fixed .gl-copy{display:none}' +
     '@media(max-width:560px){.gl-fab span{display:none}.gl-fab{padding:14px}}';
 
 
@@ -93,6 +95,37 @@
       '</div>' +
       '<div class="gl-copy">GLYPH · glyph.com.ar · Hecho en Argentina</div>';
     document.body.appendChild(bar);
+
+    // Si el <body> es un contenedor flex o grid (como el login), la barra no puede ser "un hijo más":
+    // quedaría al lado del formulario. La fijamos abajo y reservamos ese espacio para no tapar nada.
+    var basePad = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+    function placeBar() {
+      var d = getComputedStyle(document.body).display;
+      if (d.indexOf('flex') === -1 && d.indexOf('grid') === -1) return;
+      bar.classList.add('gl-fixed');
+      var h = bar.offsetHeight;
+      document.body.style.paddingBottom = (basePad + h) + 'px';
+      document.documentElement.style.setProperty('--gl-bar-h', h + 'px');
+    }
+    placeBar();
+    window.addEventListener('load', placeBar);
+    window.addEventListener('resize', placeBar);
+
+    // Link "Blog" en el header de las páginas internas (ayuda, términos, privacidad, cuenta, herramientas)
+    var topHdr = document.querySelector('header.top');
+    if (topHdr && !topHdr.querySelector('a[href="/blog"]')) {
+      var firstPill = topHdr.querySelector('a.pill');
+      if (firstPill) {
+        var blogPill = document.createElement('a');
+        blogPill.className = 'pill'; blogPill.href = '/blog'; blogPill.textContent = 'Blog';
+        if (firstPill.parentNode === topHdr) {
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;gap:8px;align-items:center';
+          topHdr.insertBefore(wrap, firstPill);
+          wrap.appendChild(blogPill); wrap.appendChild(firstPill);
+        } else firstPill.parentNode.insertBefore(blogPill, firstPill);
+      }
+    }
 
     // Relleno de datos de configuración
     document.querySelectorAll('[data-cfg]').forEach(function (el) {

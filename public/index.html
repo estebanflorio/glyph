@@ -1248,6 +1248,12 @@ footer {
 .tool-more:hover { text-decoration: underline; }
 .pricing-note a, .trust-desc a { color: var(--accent); text-decoration: none; }
 .pricing-note a:hover, .trust-desc a:hover { text-decoration: underline; }
+
+/* Blog en el menú principal */
+.nav-mobile-actions { display: none; }
+.nav-mobile-link { font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--text2); text-decoration: none; padding: 8px 4px; }
+.nav-mobile-link:hover { color: var(--text); }
+@media (max-width: 900px) { .nav-mobile-actions { display: flex; align-items: center; gap: 10px; } }
 </style>
 </head>
 <body>
@@ -1264,9 +1270,13 @@ footer {
     <li><a href="#herramientas">Herramientas</a></li>
     <li><a href="#precios">Precios</a></li>
     <li><a href="#faq">FAQ</a></li>
+    <li><a href="/blog">Blog</a></li>
     <li><a href="/login" class="nav-cta">Abrir app →</a></li>
   </ul>
-  <a href="/login" class="nav-mobile-btn">Iniciar sesión →</a>
+  <div class="nav-mobile-actions">
+    <a href="/blog" class="nav-mobile-link">Blog</a>
+    <a href="/login" class="nav-mobile-btn">Iniciar sesión →</a>
+  </div>
 </nav>
 
 <!-- ════════════════════════════════════
