@@ -1254,6 +1254,30 @@ footer {
 .nav-mobile-link { font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--text2); text-decoration: none; padding: 8px 4px; }
 .nav-mobile-link:hover { color: var(--text); }
 @media (max-width: 900px) { .nav-mobile-actions { display: flex; align-items: center; gap: 10px; } }
+
+/* ── Ajustes mobile: nav, footer ── */
+.nav-logo, .nav-mobile-btn { white-space: nowrap; }
+.footer-tagline, .footer-links a, .footer-copy { color: var(--text2); }
+.gl-legal { margin-top: 0 !important; }
+@media (max-width: 900px) {
+  .nav-mobile-actions { gap: 4px; flex-shrink: 0; }
+  .nav-mobile-btn { padding: 9px 14px; font-size: 11px; letter-spacing: .5px; }
+  .nav-mobile-link { padding: 8px 8px; font-size: 11px; }
+  footer { gap: 22px; padding: 36px 24px 28px; }
+  footer > div:first-child { width: 100%; }
+  .faq-section { padding-bottom: 28px; }
+  .footer-tagline { letter-spacing: .3px; line-height: 1.5; }
+  .footer-links { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; width: 100%; }
+  .footer-links a { display: block; padding: 8px 0; font-size: 12px; letter-spacing: .3px; }
+  .footer-copy { font-size: 11px; line-height: 1.5; }
+}
+@media (max-width: 420px) {
+  nav { padding: 14px 16px; }
+  .nav-logo { font-size: 18px; gap: 7px; }
+  .nav-mobile-btn { padding: 8px 11px; font-size: 10.5px; }
+  .nav-mobile-link { padding: 8px 6px; font-size: 10.5px; }
+  .hero { padding: 108px 18px 48px; }
+}
 </style>
 </head>
 <body>

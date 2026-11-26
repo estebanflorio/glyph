@@ -27,10 +27,13 @@
     '.gl-links a:hover{color:#e8e8ec}' +
     '.gl-links a.gl-btn{padding:6px 12px;border:1px solid #2a2a32;border-radius:6px;color:#c8f135}' +
     '.gl-links a.gl-btn:hover{border-color:#c8f135;color:#c8f135}' +
-    '.gl-copy{font-size:10px;color:#444458;letter-spacing:1px}' +
+    '.gl-copy{font-size:10px;color:#7a7a92;letter-spacing:1px}' +
     '.gl-legal.gl-fixed,.gl-legal.gl-fixed.gl-pad{position:fixed;left:0;right:0;bottom:0;margin:0;padding:10px 12px;z-index:5;background:rgba(10,10,11,.94);border-top:1px solid #2a2a32}' +
     '.gl-fixed .gl-links{margin-bottom:0;gap:4px 14px}.gl-fixed .gl-copy{display:none}' +
-    '@media(max-width:560px){.gl-fab span{display:none}.gl-fab{padding:14px}}';
+    '@media(max-width:560px){.gl-fab span{display:none}.gl-fab{padding:14px}' +
+    '.gl-legal:not(.gl-fixed) .gl-links{gap:4px 16px}.gl-legal:not(.gl-fixed) .gl-links a{padding:6px 2px}' +
+    '.gl-legal:not(.gl-fixed) .gl-links a.gl-btn{order:2;flex:1 1 calc(50% - 8px);display:flex;align-items:center;justify-content:center;padding:10px 8px;text-align:center}' +
+    '.gl-legal:not(.gl-fixed) .gl-links a.gl-def{order:3;flex:1 1 100%;text-align:center;padding-top:10px}}';
 
 
   // ── Temas de temporada ──────────────────────────────────────────
@@ -91,7 +94,7 @@
         '<a href="/privacidad">Privacidad</a>' +
         '<a class="gl-btn" href="/ayuda#arrepentimiento">Botón de arrepentimiento</a>' +
         '<a class="gl-btn" href="/ayuda#baja">Botón de baja</a>' +
-        '<a href="' + DEFENSA + '" target="_blank" rel="noopener">Defensa del Consumidor</a>' +
+        '<a class="gl-def" href="' + DEFENSA + '" target="_blank" rel="noopener">Defensa del Consumidor</a>' +
       '</div>' +
       '<div class="gl-copy">GLYPH · glyph.com.ar · Hecho en Argentina</div>';
     document.body.appendChild(bar);

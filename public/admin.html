@@ -92,6 +92,7 @@ body::before {
 .nav-item:hover { color: var(--text); background: var(--s2); }
 .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(200,241,53,.05); }
 .nav-item .nav-icon { font-size: 14px; }
+.lbl-short { display: none; }
 
 .sidebar-footer {
   padding: 16px 20px;
@@ -395,6 +396,9 @@ td.highlight { color: var(--text); }
   }
   .nav-item.active { border-left-color: transparent; border-top-color: var(--accent); }
   .nav-item .nav-icon { font-size: 18px; }
+  .nav-item { min-width: 0; }
+  .lbl-full { display: none; }
+  .lbl-short { display: inline; }
   .nav-badge { position: absolute; top: 3px; left: calc(50% + 6px); margin: 0; font-size: 9px; padding: 0 5px; }
 
   /* Contenido */
@@ -535,13 +539,17 @@ td.highlight { color: var(--text); }
     </div>
     <div class="nav-item" onclick="navigate('transactions', this)">
       <span class="nav-icon">💳</span>
-      <span>Transacciones</span>
+      <span><span class="lbl-full">Transacciones</span><span class="lbl-short">Pagos</span></span>
     </div>
     <div class="nav-item" onclick="navigate('support', this)">
       <span class="nav-icon">💬</span>
       <span>Soporte</span>
       <span class="nav-badge" id="supportBadge" hidden>0</span>
     </div>
+    <a class="nav-item" href="/admin/blog" style="text-decoration:none">
+      <span class="nav-icon">📝</span>
+      <span>Blog</span>
+    </a>
     <div class="nav-item" onclick="navigate('logs', this)">
       <span class="nav-icon">📋</span>
       <span>Actividad</span>

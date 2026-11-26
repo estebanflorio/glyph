@@ -69,3 +69,13 @@
   .tp-spec .v { text-align: left; }
   .tp-cta { padding: 28px 18px; }
 }
+
+/* Header mobile: fila 1 = logo + "Abrir app", fila 2 = links repartidos parejo */
+@media (max-width: 560px) {
+  .top { flex-wrap: wrap; gap: 10px 8px; }
+  .top::after { content: ''; order: 2; flex: 0 0 100%; height: 0; }
+  .top .brand { order: 1; margin-right: auto; }
+  .tp-nav { display: contents; }
+  .tp-nav .pill { order: 3; flex: 1 1 0; text-align: center; padding: 9px 6px; }
+  .tp-nav .pill:last-child { order: 1; flex: 0 0 auto; padding: 9px 16px; }
+}

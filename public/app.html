@@ -917,6 +917,19 @@
     .actions-row .btn { flex: 1 1 auto; }
     .info-box { font-size: 10px; }
   }
+
+  /* ── Header mobile: fila 1 = logo + cuenta, fila 2 = pestañas en grilla ── */
+  @media (max-width: 640px) {
+    header { flex-wrap: wrap; align-items: center; }
+    .header-auth { flex-wrap: nowrap; flex: 1 1 auto; justify-content: flex-end; }
+    .admin-btn .admin-tx { display: none; }
+    .admin-btn { padding: 7px 11px; font-size: 14px; line-height: 1; }
+    .user-btn span:nth-child(2) { display: none; }
+    .nav-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; overflow: visible; }
+    .nav-tab { flex-direction: column; justify-content: flex-start; gap: 3px; padding: 8px 2px; font-size: 10px; letter-spacing: 0; line-height: 1.25; text-align: center; min-width: 0; position: relative; }
+    .nav-tab .tab-icon { font-size: 17px; }
+    #semiLock { position: absolute; top: 2px; right: 3px; font-size: 9px; }
+  }
 </style>
 </head>
 <body>
@@ -1807,7 +1820,7 @@ async function updateSemitonosTab() {
 function renderLoggedIn({ email, credits, isAdmin }) {
   const ha = document.getElementById('headerAuth');
   const adminBtn = isAdmin
-    ? `<a href="/admin" class="admin-btn" title="Panel de administración">⚙ Admin</a>`
+    ? `<a href="/admin" class="admin-btn" title="Panel de administración"><span class="admin-ic">⚙</span><span class="admin-tx"> Admin</span></a>`
     : '';
   ha.innerHTML = `
     ${adminBtn}
