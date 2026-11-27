@@ -494,7 +494,7 @@
   @media (max-width: 768px) {
     .two-col-upscale { grid-template-columns: 1fr; }
   }
-  .mockup-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+  .mockup-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px; }
 
   .mockup-item {
     background: var(--surface2);
@@ -925,11 +925,14 @@
     .admin-btn .admin-tx { display: none; }
     .admin-btn { padding: 7px 11px; font-size: 14px; line-height: 1; }
     .user-btn span:nth-child(2) { display: none; }
-    .nav-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; overflow: visible; }
+    .nav-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; overflow: visible; }
     .nav-tab { flex-direction: column; justify-content: flex-start; gap: 3px; padding: 8px 2px; font-size: 10px; letter-spacing: 0; line-height: 1.25; text-align: center; min-width: 0; position: relative; }
     .nav-tab .tab-icon { font-size: 17px; }
     #semiLock { position: absolute; top: 2px; right: 3px; font-size: 9px; }
   }
+  /* Selector de herramientas: reemplaza a las pestañas (siguen en el DOM, ocultas) */
+  .nav-tabs { display: none !important; }
+  @media (max-width: 640px) { #toolsMenu { order: 3; width: 100%; } }
 </style>
 </head>
 <body>
@@ -939,6 +942,7 @@
     <div class="logo-dot"></div>
     GLYPH
   </div>
+  <span id="toolsMenu" data-current="bg"></span>
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('bg', this)">
       <span class="tab-icon">✂️</span> Fondo
@@ -949,6 +953,7 @@
     <button class="nav-tab" onclick="switchTab('convert', this)">
       <span class="tab-icon">🔄</span> Conversor
     </button>
+    <a class="nav-tab" href="/pliegos" style="text-decoration:none"><span class="tab-icon">🧩</span> Pliegos</a>
     <a class="nav-tab" href="/semitonos?abrir=1" id="tabSemitonos" style="text-decoration:none">
       <span class="tab-icon">✦</span> Semitonos DTF <span id="semiLock" title="Incluido en los paquetes Pro y Studio">🔒</span>
     </a>
@@ -1247,8 +1252,8 @@ function switchTab(tab, btn) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-' + tab).classList.add('active');
   btn.classList.add('active');
-  syncKeyDisplays();
-  updateApiStatus();
+  if (typeof syncKeyDisplays === 'function') syncKeyDisplays();
+  if (typeof updateApiStatus === 'function') updateApiStatus();
 }
 
 // ============================================================
@@ -1966,5 +1971,6 @@ Promise.all([initFirebase(), initFingerprint()]).then(checkPaymentReturn);
 
 <script src="/assets/site-config.js"></script>
 <script src="/assets/site-widget.js" defer></script>
+<script src="/assets/tools-menu.js"></script>
 </body>
 </html>

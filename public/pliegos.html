@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Armador de pliegos DTF gratis · GLYPH</title>
+<meta name="description" content="Armá tu pliego DTF en el navegador: subí tus diseños, ordenalos solos, calculá el precio por metro y descargá el PNG a 300 ppp. Gratis y sin subir tus archivos.">
+<meta name="theme-color" content="#0a0a0b">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0b;--s:#111113;--s2:#18181c;--b:#2a2a32;--a:#c8f135;--t:#e8e8ec;--t2:#8888a0;--r:#ff4757}
+*{box-sizing:border-box}html,body{margin:0;max-width:100%;overflow-x:clip}
+body{background:var(--bg);color:var(--t);font:13px/1.5 'DM Mono',monospace;padding-top:env(safe-area-inset-top)}
+a{color:var(--a);text-decoration:none}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--b)}@media(max-width:820px){#toolsMenu{order:3;width:100%}}
+.brand{font:800 20px 'Syne',sans-serif;color:var(--t)}.brand small{font:400 11px 'DM Mono',monospace;color:var(--t2);letter-spacing:1.5px;margin-left:6px}
+.top nav a{color:var(--t2);font-size:12px}
+.wrap{display:grid;grid-template-columns:320px 1fr;gap:16px;padding:16px;max-width:1300px;margin:0 auto}
+.side{display:flex;flex-direction:column;gap:14px}
+.box{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px}
+h2{margin:0 0 10px;font:600 10px 'DM Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2)}
+.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:8px}.row>label{flex:1 1 90px}
+label{display:block;font-size:11px;color:var(--t2)}
+input,select{width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--b);border-radius:8px;background:var(--s2);color:var(--t);font:inherit}
+input:focus,select:focus{outline:none;border-color:var(--a)}
+input[type=checkbox]{width:auto;margin:0 6px 0 0;vertical-align:middle;accent-color:var(--a)}
+.chkl{display:flex;align-items:center;color:var(--t);margin:4px 0}
+.btn{padding:10px 12px;border:1px solid var(--b);border-radius:8px;background:var(--s2);color:var(--t);font:inherit;cursor:pointer;flex:1}
+.btn:hover{border-color:var(--t2)}.btn.p{background:var(--a);border-color:var(--a);color:#0a0a0b;font-weight:500}.btn.d{color:var(--r)}
+.drop{display:block;text-align:center;padding:16px;border:1px dashed var(--b);border-radius:10px;color:var(--t2);cursor:pointer}
+.drop:hover{border-color:var(--a);color:var(--t)}
+#list{list-style:none;margin:10px 0 0;padding:0;max-height:140px;overflow:auto}
+#list li{padding:6px 8px;border-radius:6px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t2)}
+#list li.on{background:rgba(200,241,53,.1);color:var(--a)}
+#info{color:var(--t2)}#info b{color:var(--t)}#info .tot{font:700 18px 'Syne',sans-serif;color:var(--a)}
+#msg{color:var(--t2);font-size:11px;min-height:16px}
+.stage{position:sticky;top:12px;height:calc(100vh - 90px);min-height:320px;display:flex;flex-direction:column;background:var(--s);border:1px solid var(--b);border-radius:12px;overflow:hidden}
+#holder{flex:1;display:flex;align-items:center;justify-content:center;padding:6px;min-height:0}
+#cv{touch-action:none;border:1px solid var(--b);cursor:grab}
+.chk{background:conic-gradient(#2a2a30 25%,#1c1c21 0 50%,#2a2a30 0 75%,#1c1c21 0) 0 0/16px 16px}
+.hint{padding:6px 12px;border-top:1px solid var(--b);color:var(--t2);font-size:11px}
+@media(max-width:820px){.wrap{display:flex;flex-direction:column;padding:10px}.stage{order:-1;top:0;z-index:5;height:50vh;height:50dvh;min-height:0;box-shadow:0 8px 18px rgba(0,0,0,.5)}input,select{font-size:16px}}
+</style>
+</head>
+<body>
+<header class="top"><a class="brand" href="/">GLYPH<small>PLIEGOS DTF</small></a><span id="toolsMenu" data-current="pliegos"></span><nav><a href="/app">← Volver a la app</a></nav></header>
+<div class="wrap">
+<aside class="side">
+ <div class="box"><h2>1. Pliego</h2>
+  <div class="row"><label>Ancho (cm)<input id="W" type="number" value="58" min="5" step="1"></label><label>Largo (cm)<input id="H" type="number" value="100" min="5" step="1"></label></div>
+  <label class="chkl"><input id="auto" type="checkbox" checked>Largo automático (se ajusta al contenido)</label>
+  <div class="row"><label>Separación (cm)<input id="gap" type="number" value="0.6" min="0" step="0.1"></label><label>Precio del metro ($)<input id="price" type="number" value="" min="0" placeholder="0"></label></div>
+  <label>Fondo de la vista<select id="bg"><option value="t">Transparente</option><option value="#000">Negro</option><option value="#fff">Blanco</option></select></label>
+ </div>
+ <div class="box"><h2>2. Diseños</h2>
+  <label class="drop" for="f">+ Subir imágenes (PNG con fondo transparente)</label><input id="f" type="file" accept="image/*" multiple hidden>
+  <ul id="list"></ul>
+  <div id="selbox" hidden>
+   <div class="row" style="margin-top:10px"><label>Ancho (cm)<input id="iw" type="number" min="0.5" step="0.1"></label><label>Alto (cm)<input id="ih" disabled></label><label>Copias<input id="nc" type="number" value="1" min="1" max="200"></label></div>
+   <div class="row"><button class="btn" id="rot">↻ Rotar</button><button class="btn" id="dup">Duplicar</button><button class="btn d" id="del">Borrar</button></div>
+  </div>
+ </div>
+ <div class="box"><h2>3. Armar y descargar</h2>
+  <div class="row"><button class="btn" id="pack">Ordenar solo</button><button class="btn p" id="exp">Descargar PNG</button></div>
+  <div id="info"></div><div id="msg"></div>
+ </div>
+</aside>
+<main class="stage"><div id="holder"><canvas id="cv" class="chk"></canvas></div><div class="hint">Arrastrá los diseños para moverlos. Todo se procesa en tu navegador: tus archivos no se suben a ningún servidor.</div></main>
+</div>
+<script>
+const $=s=>document.querySelector(s),S={it:[],sel:-1,n:0},cv=$('#cv'),cx=cv.getContext('2d');
+const nv=(id,d)=>{const v=parseFloat($(id).value);return v>=0?v:d};
+const W=()=>nv('#W',58)||58,auto=()=>$('#auto').checked,gap=()=>nv('#gap',.6);
+const dim=i=>i.rot%180?{w:i.h,h:i.w}:{w:i.w,h:i.h};
+const used=()=>S.it.reduce((m,i)=>Math.max(m,i.y+dim(i).h),0);
+const H=()=>auto()?Math.max(20,Math.ceil(used()+2)):(nv('#H',100)||100);
+const msg=t=>$('#msg').textContent=t;
+function paint(x,i,k){const d=dim(i);x.save();x.translate((i.x+d.w/2)*k,(i.y+d.h/2)*k);x.rotate(i.rot*Math.PI/180);x.imageSmoothingQuality='high';x.drawImage(i.img,-i.w*k/2,-i.h*k/2,i.w*k,i.h*k);x.restore()}
+function draw(){const w=W(),h=H(),ho=$('#holder'),d=devicePixelRatio||1,sc=S.sc=Math.max(1,Math.min((ho.clientWidth-14)/w,(ho.clientHeight-14)/h));
+ cv.style.width=w*sc+'px';cv.style.height=h*sc+'px';cv.width=Math.round(w*sc*d);cv.height=Math.round(h*sc*d);
+ const bg=$('#bg').value;cv.classList.toggle('chk',bg==='t');cv.style.background=bg==='t'?'':bg;
+ cx.setTransform(d,0,0,d,0,0);cx.strokeStyle='rgba(136,136,160,.18)';cx.lineWidth=1;cx.beginPath();
+ for(let g=10;g<w;g+=10){cx.moveTo(g*sc,0);cx.lineTo(g*sc,h*sc)}for(let g=10;g<h;g+=10){cx.moveTo(0,g*sc);cx.lineTo(w*sc,g*sc)}cx.stroke();
+ S.it.forEach((i,n)=>{paint(cx,i,sc);const b=dim(i),out=i.x<-.01||i.y<-.01||i.x+b.w>w+.01||i.y+b.h>h+.01;
+  if(out||n===S.sel){cx.lineWidth=2;cx.strokeStyle=out?'#ff4757':'#c8f135';cx.setLineDash(out?[5,4]:[]);cx.strokeRect(i.x*sc,i.y*sc,b.w*sc,b.h*sc);cx.setLineDash([])}})}
+function sync(){const l=$('#list');l.innerHTML='';S.it.forEach((i,n)=>{const li=document.createElement('li');li.textContent=i.name;li.className=n===S.sel?'on':'';li.onclick=()=>{S.sel=n;sync();draw()};l.append(li)});
+ const i=S.it[S.sel];$('#selbox').hidden=!i;if(i){$('#iw').value=+i.w.toFixed(2);$('#ih').value=i.h.toFixed(2)}
+ const len=used(),p=nv('#price',0),m=len/100;
+ $('#info').innerHTML=S.it.length?`Diseños: <b>${S.it.length}</b> · Largo usado: <b>${len.toFixed(1)} cm</b> (${m.toFixed(2)} m)`+(p?`<br>Total: <span class="tot">$ ${Math.round(m*p).toLocaleString('es-AR')}</span>`:''):'Subí tus diseños para empezar.'}
+const all=()=>{sync();draw()};
+function add(files){[...files].filter(f=>f.type.startsWith('image/')).forEach(f=>{const img=new Image();img.onload=()=>{let w=img.naturalWidth/300*2.54,h=img.naturalHeight/300*2.54,m=W();if(w>m){h*=m/w;w=m}
+ S.it.push({id:++S.n,img,name:f.name,x:0,y:S.it.length?used()+gap():0,w,h,rot:0});S.sel=S.it.length-1;all()};img.src=URL.createObjectURL(f)})}
+function pack(){const g=gap(),w=W();let x=0,y=0,rh=0;S.it.slice().sort((a,b)=>dim(b).h-dim(a).h).forEach(i=>{const d=dim(i);if(x>0&&x+d.w>w+1e-6){x=0;y+=rh+g;rh=0}i.x=x;i.y=y;x+=d.w+g;rh=Math.max(rh,d.h)});all()}
+$('#f').onchange=e=>{add(e.target.files);e.target.value=''};
+const st=document.querySelector('.stage');st.ondragover=e=>e.preventDefault();st.ondrop=e=>{e.preventDefault();add(e.dataTransfer.files)};
+$('#iw').oninput=e=>{const i=S.it[S.sel],v=parseFloat(e.target.value);if(i&&v>0){i.h=v*i.img.naturalHeight/i.img.naturalWidth;i.w=v;$('#ih').value=i.h.toFixed(2);sync();draw()}};
+$('#rot').onclick=()=>{const i=S.it[S.sel];if(i){i.rot=(i.rot+90)%360;all()}};
+$('#del').onclick=()=>{if(S.sel>=0){S.it.splice(S.sel,1);S.sel=S.it.length-1;all()}};
+$('#dup').onclick=()=>{const i=S.it[S.sel];if(!i)return;const n=Math.min(200,Math.max(1,parseInt($('#nc').value)||1));let y=used()+gap();for(let k=0;k<n;k++)S.it.push({...i,id:++S.n,x:0,y:y+k*(dim(i).h+gap())});S.sel=S.it.length-1;all();if(n>1)pack()};
+$('#pack').onclick=pack;
+['#W','#H','#gap','#price','#auto','#bg'].forEach(s=>$(s).oninput=all);addEventListener('resize',draw);
+addEventListener('keydown',e=>{if(e.key==='Delete'&&!/INPUT|SELECT/.test(document.activeElement.tagName))$('#del').click()});
+let dr=null;const pt=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/S.sc,y:(e.clientY-r.top)/S.sc}};
+cv.onpointerdown=e=>{const p=pt(e);let h=-1;for(let n=S.it.length-1;n>=0;n--){const i=S.it[n],d=dim(i);if(p.x>=i.x&&p.x<=i.x+d.w&&p.y>=i.y&&p.y<=i.y+d.h){h=n;break}}
+ S.sel=h;if(h>=0){dr={dx:p.x-S.it[h].x,dy:p.y-S.it[h].y};cv.setPointerCapture(e.pointerId)}sync();draw()};
+cv.onpointermove=e=>{if(!dr)return;const p=pt(e),i=S.it[S.sel];i.x=Math.round((p.x-dr.dx)*10)/10;i.y=Math.round((p.y-dr.dy)*10)/10;draw()};
+cv.onpointerup=cv.onpointercancel=()=>{if(dr){dr=null;sync();draw()}};
+const T=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc=b=>{let c=-1;for(const x of b)c=T[(c^x)&255]^(c>>>8);return(c^-1)>>>0};
+async function setDpi(blob,dpi){const u=new Uint8Array(await blob.arrayBuffer()),p=Math.round(dpi/.0254),c=new Uint8Array(13),v=new DataView(c.buffer);
+ c.set([0x70,0x48,0x59,0x73]);v.setUint32(4,p);v.setUint32(8,p);c[12]=1;const ch=new Uint8Array(21);new DataView(ch.buffer).setUint32(0,9);ch.set(c,4);new DataView(ch.buffer).setUint32(17,crc(c));
+ const o=new Uint8Array(u.length+21);o.set(u.subarray(0,33));o.set(ch,33);o.set(u.subarray(33),54);return new Blob([o],{type:'image/png'})}
+$('#exp').onclick=()=>{if(!S.it.length)return msg('Subí al menos un diseño.');
+ const w=W(),h=auto()?Math.max(1,used()):(nv('#H',100)||100),max=matchMedia('(pointer:coarse)').matches?16e6:120e6,area=(w/2.54)*(h/2.54);let dpi=300;if(area*dpi*dpi>max)dpi=Math.floor(Math.sqrt(max/area));
+ const c=document.createElement('canvas');c.width=Math.round(w/2.54*dpi);c.height=Math.round(h/2.54*dpi);const x=c.getContext('2d'),k=c.width/w;S.it.forEach(i=>paint(x,i,k));
+ c.toBlob(async b=>{if(!b)return msg('Tu navegador no pudo generar un archivo tan grande. Probá con un pliego más corto.');const f=await setDpi(b,dpi),a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=`pliego-${w}x${Math.round(h)}cm.png`;a.click();
+  msg(dpi<300?`Se exportó a ${dpi} ppp (este dispositivo no aguanta 300 ppp a ese tamaño).`:'Descargado a 300 ppp.')},'image/png')};
+all();
+</script>
+<script src="/assets/tools-menu.js"></script>
+<script src="/assets/site-config.js"></script>
+<script src="/assets/site-widget.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Calado por color gratis · GLYPH</title>
+<meta name="description" content="Eliminá tinta de colores específicos de tu diseño (calado) para DTF y sublimación. Gratis, en tu navegador y sin subir tus archivos.">
+<meta name="theme-color" content="#0a0a0b">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0b;--s:#111113;--s2:#18181c;--b:#2a2a32;--a:#c8f135;--t:#e8e8ec;--t2:#8888a0;--r:#ff4757}
+*{box-sizing:border-box}html,body{margin:0;max-width:100%;overflow-x:clip}
+body{background:var(--bg);color:var(--t);font:13px/1.5 'DM Mono',monospace;padding-top:env(safe-area-inset-top)}
+a{color:var(--a);text-decoration:none}
+.top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--b)}
+.brand{font:800 20px 'Syne',sans-serif;color:var(--t)}.brand small{font:400 11px 'DM Mono',monospace;color:var(--t2);letter-spacing:1.5px;margin-left:6px}
+.top nav a{color:var(--t2);font-size:12px}
+.wrap{display:grid;grid-template-columns:320px 1fr;gap:16px;padding:16px;max-width:1300px;margin:0 auto}
+.side{display:flex;flex-direction:column;gap:14px}
+.box{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px}
+h2{margin:0 0 10px;font:600 10px 'DM Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2)}
+.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:8px}.row>label{flex:1 1 90px}
+label{display:block;font-size:11px;color:var(--t2)}
+input,select{width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--b);border-radius:8px;background:var(--s2);color:var(--t);font:inherit}
+input:focus,select:focus{outline:none;border-color:var(--a)}
+input[type=checkbox]{width:auto;margin:0 6px 0 0;vertical-align:middle;accent-color:var(--a)}
+.chkl{display:flex;align-items:center;color:var(--t);margin:4px 0}
+.btn{padding:10px 12px;border:1px solid var(--b);border-radius:8px;background:var(--s2);color:var(--t);font:inherit;cursor:pointer;flex:1}
+.btn:hover{border-color:var(--t2)}.btn.p{background:var(--a);border-color:var(--a);color:#0a0a0b;font-weight:500}.btn.d{color:var(--r)}
+.drop{display:block;text-align:center;padding:16px;border:1px dashed var(--b);border-radius:10px;color:var(--t2);cursor:pointer}
+.drop:hover{border-color:var(--a);color:var(--t)}
+#list{list-style:none;margin:10px 0 0;padding:0;max-height:140px;overflow:auto}
+#list li{padding:6px 8px;border-radius:6px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t2)}
+#list li.on{background:rgba(200,241,53,.1);color:var(--a)}
+#info{color:var(--t2)}#info b{color:var(--t)}#info .tot{font:700 18px 'Syne',sans-serif;color:var(--a)}
+#msg{color:var(--t2);font-size:11px;min-height:16px}
+.stage{position:sticky;top:12px;height:calc(100vh - 90px);min-height:320px;display:flex;flex-direction:column;background:var(--s);border:1px solid var(--b);border-radius:12px;overflow:hidden}
+#holder{flex:1;display:flex;align-items:center;justify-content:center;padding:6px;min-height:0}
+#cv{max-width:100%;max-height:100%;border:1px solid var(--b);cursor:crosshair}
+.chk{background:conic-gradient(#2a2a30 25%,#1c1c21 0 50%,#2a2a30 0 75%,#1c1c21 0) 0 0/16px 16px}
+.hint{padding:6px 12px;border-top:1px solid var(--b);color:var(--t2);font-size:11px}
+@media(max-width:820px){.wrap{display:flex;flex-direction:column;padding:10px}.stage{order:-1;top:0;z-index:5;height:50vh;height:50dvh;min-height:0;box-shadow:0 8px 18px rgba(0,0,0,.5)}input,select{font-size:16px}}
+.seg{display:flex;gap:6px;margin-bottom:10px}.seg .btn.on{background:rgba(200,241,53,.12);border-color:var(--a);color:var(--a)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chip{display:flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--b);border-radius:999px;background:var(--s2);font-size:11px;cursor:pointer}.chip i{width:14px;height:14px;border-radius:50%;border:1px solid var(--t2)}
+.gar{display:flex;gap:8px;align-items:center;margin:6px 0}.gar button{width:28px;height:28px;border-radius:50%;border:2px solid var(--b);cursor:pointer;padding:0}.gar button.on{border-color:var(--a)}.gar input{width:34px;height:30px;padding:0;margin:0}
+.top{gap:10px;flex-wrap:wrap}@media(max-width:820px){#toolsMenu{order:3;width:100%}}
+input[type=range]{padding:0;accent-color:var(--a)}
+</style>
+</head>
+<body>
+<header class="top"><a class="brand" href="/">GLYPH<small>CALADO</small></a><span id="toolsMenu" data-current="calado"></span><nav><a href="/app">← Volver a la app</a></nav></header>
+<div class="wrap">
+<aside class="side">
+ <div class="box"><h2>1. Imagen</h2>
+  <label class="drop" for="f">+ Subir PNG, JPG o WebP</label><input id="f" type="file" accept="image/*" hidden>
+  <div id="fn" style="margin-top:8px;color:var(--t2);font-size:11px"></div></div>
+ <div class="box"><h2>2. Colores a calar</h2>
+  <div class="seg"><button class="btn on" id="mg">Global</button><button class="btn" id="mz">Por zona</button></div>
+  <div style="color:var(--t2);font-size:11px;margin-bottom:6px" id="mh">Tocá un color de la imagen: se elimina en toda la imagen.</div>
+  <label>Tolerancia <b id="tv" style="color:var(--a)">18</b><input id="tol" type="range" min="0" max="80" value="18"></label>
+  <label>Suavidad de bordes <b id="sv" style="color:var(--a)">3</b><input id="soft" type="range" min="0" max="30" value="3"></label>
+  <div class="chips" id="chips"></div>
+  <div class="row" style="margin-top:10px"><button class="btn" id="undo">Deshacer</button><button class="btn d" id="clr">Limpiar</button></div></div>
+ <div class="box"><h2>3. Vista y descarga</h2>
+  <div class="gar">Prenda: <button data-c="#111111" class="on" style="background:#111"></button><button data-c="#ffffff" style="background:#fff"></button><button data-c="#c62828" style="background:#c62828"></button><button data-c="#1e4fa3" style="background:#1e4fa3"></button><input type="color" id="gc" value="#444444"></div>
+  <label class="chkl"><input id="mask" type="checkbox">Ver máscara (blanco = se imprime)</label>
+  <div class="row"><button class="btn p" id="dl">Descargar PNG</button></div>
+  <div id="info" style="color:var(--t2)"></div><div id="msg"></div></div>
+</aside>
+<main class="stage"><div id="holder"><div id="empty" style="color:var(--t2);text-align:center;padding:20px">Cargá una imagen para empezar.<br>Después tocá los colores que querés eliminar.</div><canvas id="cv" hidden></canvas></div>
+<div class="hint">El calado vuelve transparente la tinta de ese color para que se vea la tela. Tu imagen original no se modifica y no se sube a ningún servidor.</div></main>
+</div>
+<script>
+const $=s=>document.querySelector(s),cv=$('#cv'),cx=cv.getContext('2d'),off=document.createElement('canvas'),ox=off.getContext('2d');
+let src=null,base=null,bw=0,bh=0,ents=[],mode='g',gar='#111111',name='imagen';
+function mkBase(img,max){const m=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.round(img.naturalWidth*m),h=Math.round(img.naturalHeight*m),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,w,h);return x.getImageData(0,0,w,h)}
+function proc(d,w,h){const thr=$('#tol').value*4.41,soft=$('#soft').value*3+.001,o=new ImageData(new Uint8ClampedArray(d.data),w,h),a=o.data,n=w*h,k=new Float32Array(n).fill(1),D=d.data;
+ const dist=(p,e)=>{const i=p*4,r=D[i]-e.r,g=D[i+1]-e.g,b=D[i+2]-e.b;return Math.sqrt(r*r+g*g+b*b)},ramp=v=>v<=thr?0:v>=thr+soft?1:(v-thr)/soft;
+ for(const e of ents){if(e.m==='g'){for(let p=0;p<n;p++){const f=ramp(dist(p,e));if(f<k[p])k[p]=f}}
+  else{const sx=Math.min(w-1,Math.round(e.sx*w)),sy=Math.min(h-1,Math.round(e.sy*h)),seen=new Uint8Array(n),st=[sy*w+sx];seen[st[0]]=1;
+   while(st.length){const p=st.pop(),f=ramp(dist(p,e));if(f>=1)continue;if(f<k[p])k[p]=f;const x=p%w,y=(p/w)|0;
+    if(x>0&&!seen[p-1]){seen[p-1]=1;st.push(p-1)}if(x<w-1&&!seen[p+1]){seen[p+1]=1;st.push(p+1)}if(y>0&&!seen[p-w]){seen[p-w]=1;st.push(p-w)}if(y<h-1&&!seen[p+w]){seen[p+w]=1;st.push(p+w)}}}}
+ let c=0;for(let p=0;p<n;p++){const al=a[p*4+3]*k[p];a[p*4+3]=al;if(al<1)c++}return{o,c,k}}
+function render(){if(!base)return;const r=proc(base,bw,bh);off.width=cv.width=bw;off.height=cv.height=bh;
+ if($('#mask').checked){const m=new ImageData(bw,bh);for(let p=0;p<bw*bh;p++){const v=r.k[p]*(base.data[p*4+3]/255)*255;m.data[p*4]=m.data[p*4+1]=m.data[p*4+2]=v;m.data[p*4+3]=255}ox.putImageData(m,0,0)}else ox.putImageData(r.o,0,0);
+ cx.fillStyle=gar;cx.fillRect(0,0,bw,bh);cx.drawImage(off,0,0);$('#info').textContent=r.c.toLocaleString('es-AR')+' px calados en la vista previa';chips()}
+function chips(){const c=$('#chips');c.innerHTML='';ents.forEach((e,n)=>{const d=document.createElement('div');d.className='chip';d.title='Quitar este color';d.innerHTML=`<i style="background:rgb(${e.r},${e.g},${e.b})"></i>${e.m==='g'?'Global':'Zona'} ✕`;d.onclick=()=>{ents.splice(n,1);render()};c.append(d)})}
+function load(f){if(!f)return;const im=new Image();im.onload=()=>{src=im;name=f.name.replace(/\.[^.]+$/,'');base=mkBase(im,1400);bw=base.width;bh=base.height;ents=[];$('#empty').hidden=true;cv.hidden=false;$('#fn').textContent=f.name+' · '+im.naturalWidth+'×'+im.naturalHeight+' px';render()};im.src=URL.createObjectURL(f)}
+$('#f').onchange=e=>load(e.target.files[0]);const st=document.querySelector('.stage');st.ondragover=e=>e.preventDefault();st.ondrop=e=>{e.preventDefault();load(e.dataTransfer.files[0])};
+cv.onclick=e=>{if(!base)return;const r=cv.getBoundingClientRect(),fx=(e.clientX-r.left)/r.width,fy=(e.clientY-r.top)/r.height,p=(Math.min(bh-1,Math.floor(fy*bh))*bw+Math.min(bw-1,Math.floor(fx*bw)))*4,D=base.data;
+ if(D[p+3]<10)return $('#msg').textContent='Ahí ya es transparente. Tocá una parte con color.';$('#msg').textContent='';ents.push({r:D[p],g:D[p+1],b:D[p+2],m:mode,sx:fx,sy:fy});render()};
+const setMode=m=>{mode=m;$('#mg').classList.toggle('on',m==='g');$('#mz').classList.toggle('on',m==='z');$('#mh').textContent=m==='g'?'Tocá un color de la imagen: se elimina en toda la imagen.':'Tocá un color: se elimina solo la zona conectada a ese punto (ideal para fondos y huecos).'};
+$('#mg').onclick=()=>setMode('g');$('#mz').onclick=()=>setMode('z');
+$('#tol').oninput=e=>{$('#tv').textContent=e.target.value;render()};$('#soft').oninput=e=>{$('#sv').textContent=e.target.value;render()};$('#mask').onchange=render;
+$('#undo').onclick=()=>{ents.pop();render()};$('#clr').onclick=()=>{ents=[];render()};
+document.querySelectorAll('.gar button').forEach(b=>b.onclick=()=>{gar=b.dataset.c;document.querySelectorAll('.gar button').forEach(x=>x.classList.toggle('on',x===b));render()});
+$('#gc').oninput=e=>{gar=e.target.value;document.querySelectorAll('.gar button').forEach(x=>x.classList.remove('on'));render()};
+$('#dl').onclick=()=>{if(!src||!ents.length)return $('#msg').textContent='Elegí al menos un color para calar.';
+ const full=mkBase(src,6000),r=proc(full,full.width,full.height),c=document.createElement('canvas');c.width=full.width;c.height=full.height;c.getContext('2d').putImageData(r.o,0,0);
+ c.toBlob(b=>{if(!b)return $('#msg').textContent='Tu navegador no pudo generar el archivo.';const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name+'-calado.png';a.click();$('#msg').textContent='Descargado: PNG con transparencia real. Verificá el blanco en tu RIP antes de producir.'},'image/png')};
+</script>
+<script src="/assets/tools-menu.js"></script>
+<script src="/assets/site-config.js"></script>
+<script src="/assets/site-widget.js"></script>
+</body>
+</html>
