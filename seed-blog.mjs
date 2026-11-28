@@ -1,4 +1,4 @@
-// seed-blog.mjs — carga los 3 primeros artículos como BORRADORES en tu blog.
+// seed-blog.mjs — carga los artículos de blog-articles/ como BORRADORES en tu blog.
 // Uso (desde la carpeta del proyecto, con tu .env):   node seed-blog.mjs
 // Es seguro correrlo más de una vez: omite los artículos que ya existen.
 

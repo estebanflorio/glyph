@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /cuenta
+Disallow: /api/
+Disallow: /herramientas/
+
+Sitemap: https://glyph.com.ar/sitemap.xml
+Sitemap: https://glyph.com.ar/blog/sitemap.xml
